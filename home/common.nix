@@ -36,11 +36,12 @@
     firebase-tools
     google-cloud-sdk
 
-    # Linter
+    # Linter / Formatter
     (textlint.withPackages [
       textlint-rule-preset-ja-technical-writing
       textlint-rule-preset-ja-spacing
     ])
+    dprint
 
     # CLI Utilities
     fd
@@ -94,6 +95,7 @@
     "starship.toml".source = ../config/starship.toml;
     "lazygit/config.yml".source = ../config/lazygit/config.yml;
     "markdownlint/.markdownlint.json".source = ../config/markdownlint/.markdownlint.json;
+    "dprint/dprint.jsonc".source = ../config/dprint/dprint.jsonc;
     "uv/uv.toml".source = ../config/uv/uv.toml;
     "zellij/config.kdl".source = ../config/zellij/config.kdl;
     "tmux/tmux.conf".source = ../config/tmux/tmux.conf;

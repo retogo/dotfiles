@@ -35,15 +35,15 @@ home-manager switch --flake .#linux  --impure   # Linux
 
 ## 構成
 
-| パス | 内容 |
-|------|------|
-| `flake.nix` | エントリポイント。darwin / linux の出し分け |
-| `home/common.nix` | 共通パッケージ・zsh 設定 |
-| `home/darwin.nix` | macOS 固有設定 |
-| `home/linux.nix` | Linux 固有設定 |
-| `shell/common.sh` | 共通シェル関数 |
-| `shell/darwin.sh` | macOS 固有のシェル設定 |
-| `shell/darwin-profile.sh` | macOS のログイン時設定 |
+| パス                      | 内容                                        |
+| ------------------------- | ------------------------------------------- |
+| `flake.nix`               | エントリポイント。darwin / linux の出し分け |
+| `home/common.nix`         | 共通パッケージ・zsh 設定                    |
+| `home/darwin.nix`         | macOS 固有設定                              |
+| `home/linux.nix`          | Linux 固有設定                              |
+| `shell/common.sh`         | 共通シェル関数                              |
+| `shell/darwin.sh`         | macOS 固有のシェル設定                      |
+| `shell/darwin-profile.sh` | macOS のログイン時設定                      |
 
 ## パッケージの追加
 
