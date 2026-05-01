@@ -1,0 +1,33 @@
+# lazygit configuration
+# https://github.com/jesseduffield/lazygit/blob/master/docs/Config.md
+
+gui:
+  theme:
+    # GitHub Dark Default
+    activeBorderColor:
+      - "#58a6ff"
+      - bold
+    inactiveBorderColor:
+      - "#8b949e"
+    optionsTextColor:
+      - "#58a6ff"
+    selectedLineBgColor:
+      - "#30363d"
+    cherryPickedCommitBgColor:
+      - "#3fb950"
+    cherryPickedCommitFgColor:
+      - "#0d1117"
+    unstagedChangesColor:
+      - "#f85149"
+    defaultFgColor:
+      - "#c9d1d9"
+  showIcons: true
+  nerdFontsVersion: "3"
+git:
+  pagers:
+    - colorArg: always
+      pager: delta --dark --paging=never
+keybinding:
+  universal:
+    quit: q
+    quit-alt1: <c-c>

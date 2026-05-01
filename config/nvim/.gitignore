@@ -1,0 +1,7 @@
+lazy-lock.json
+lazyvim.json
+.neoconf.json
+stylua.toml
+LICENSE
+README.md
+lua/plugins/example.lua

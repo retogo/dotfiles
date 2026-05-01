@@ -1,0 +1,32 @@
+[core]
+	excludesfile = ~/.gitignore_global
+	pager = delta
+
+[init]
+	defaultBranch = main
+
+[interactive]
+	diffFilter = delta --color-only
+
+[delta]
+	navigate = true
+	side-by-side = true
+	syntax-theme = Visual Studio Dark+
+	dark = true
+	plus-style = syntax "#1a4028"
+	plus-emph-style = syntax "#2ea04370"
+	minus-style = syntax "#421c1f"
+	minus-emph-style = syntax "#f8514970"
+	line-numbers-plus-style = "#3fb950"
+	line-numbers-minus-style = "#f85149"
+	hunk-header-decoration-style = "#30363d" underline
+	hunk-header-style = file line-number syntax
+	file-style = "#e6edf3" bold
+	file-decoration-style = "#30363d" ul
+	line-numbers-zero-style = "#8b949e"
+
+[ghq]
+	root = ~/git/repos
+
+[include]
+	path = ~/.gitconfig.local

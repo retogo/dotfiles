@@ -1,0 +1,17 @@
+font-family = PlemolJP Console NF
+theme = GitHub Dark Default
+macos-option-as-alt = true
+split-divider-color = #999999
+unfocused-split-opacity = 0.7
+
+keybind = alt+right=esc:[1;3C
+keybind = alt+left=esc:[1;3D
+keybind = alt+up=esc:[1;3A
+keybind = alt+down=esc:[1;3B
+keybind = alt+h=goto_split:left
+keybind = alt+j=goto_split:bottom
+keybind = alt+k=goto_split:top
+keybind = alt+l=goto_split:right
+keybind = super+shift+bracket_right=unbind
+keybind = super+shift+[=previous_tab
+keybind = ctrl+l=text:\x0c
