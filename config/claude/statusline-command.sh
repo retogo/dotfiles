@@ -21,18 +21,30 @@ yellow="\033[33m"
 red="\033[31m"
 
 # キャッシュ設定
-CACHE_FILE="/tmp/statusline-git-cache-$(echo "$cwd" | md5 -q 2>/dev/null || echo "$cwd" | md5sum 2>/dev/null | cut -d' ' -f1)"
+cache_id=$(echo "$cwd" | md5 -q 2>/dev/null || echo "$cwd" | md5sum 2>/dev/null | cut -d' ' -f1)
+CACHE_FILE="/tmp/statusline-git-cache-${cache_id}"
 CACHE_MAX_AGE=5  # 秒
+MR_CACHE_FILE="/tmp/statusline-mr-cache-${cache_id}"
+MR_CACHE_MAX_AGE=60  # 秒 (glab はネットワーク呼び出しなので長め)
 
-cache_is_stale() {
-    if [ ! -f "$CACHE_FILE" ]; then
+file_is_stale() {
+    local file=$1 max_age=$2
+    if [ ! -f "$file" ]; then
         return 0
     fi
     local now file_age age
     now=$(date +%s)
-    file_age=$(stat -f %m "$CACHE_FILE" 2>/dev/null || stat -c %Y "$CACHE_FILE" 2>/dev/null)
+    file_age=$(stat -f %m "$file" 2>/dev/null || stat -c %Y "$file" 2>/dev/null)
     age=$(( now - file_age ))
-    [ "$age" -ge "$CACHE_MAX_AGE" ]
+    [ "$age" -ge "$max_age" ]
+}
+
+cache_is_stale() {
+    file_is_stale "$CACHE_FILE" "$CACHE_MAX_AGE"
+}
+
+mr_cache_is_stale() {
+    file_is_stale "$MR_CACHE_FILE" "$MR_CACHE_MAX_AGE"
 }
 
 # git情報を取得（gitリポジトリの場合のみ）
@@ -63,6 +75,32 @@ if [ -n "$cwd" ] && git -C "$cwd" rev-parse --git-dir > /dev/null 2>&1; then
     # キャッシュから読み込み
     if [ -f "$CACHE_FILE" ]; then
         IFS='|' read -r git_branch git_staged git_modified < "$CACHE_FILE"
+    fi
+fi
+
+# MR 情報を取得 (GitLab リモート かつ glab が利用可能な場合のみ)
+git_mr_iid=""
+git_mr_url=""
+
+if [ -n "$git_branch" ] && echo "$git_remote_url" | grep -qi "gitlab" && command -v glab > /dev/null 2>&1; then
+    if mr_cache_is_stale; then
+        mr_iid=""
+        mr_url=""
+        mr_json=$(cd "$cwd" && glab mr list --source-branch "$git_branch" --output json 2>/dev/null)
+        if [ -n "$mr_json" ]; then
+            mr_iid=$(echo "$mr_json" | jq -r '.[0].iid // empty' 2>/dev/null)
+            mr_url=$(echo "$mr_json" | jq -r '.[0].web_url // empty' 2>/dev/null)
+        fi
+        echo "${git_branch}|${mr_iid}|${mr_url}" > "$MR_CACHE_FILE"
+    fi
+
+    if [ -f "$MR_CACHE_FILE" ]; then
+        IFS='|' read -r cached_mr_branch git_mr_iid git_mr_url < "$MR_CACHE_FILE"
+        # キャッシュ書き込み後にブランチが変わった場合は無効化
+        if [ "$cached_mr_branch" != "$git_branch" ]; then
+            git_mr_iid=""
+            git_mr_url=""
+        fi
     fi
 fi
 
@@ -135,6 +173,15 @@ if [ -n "$git_branch" ]; then
     line1="${line1} | 🌿 ${branch_display}"
     if [ -n "$status_indicators" ]; then
         line1="${line1} ${status_indicators}"
+    fi
+
+    if [ -n "$git_mr_iid" ]; then
+        if [ -n "$git_mr_url" ]; then
+            mr_display=$(make_link "$git_mr_url" "!${git_mr_iid}")
+        else
+            mr_display="!${git_mr_iid}"
+        fi
+        line1="${line1} ${mr_display}"
     fi
 fi
 
