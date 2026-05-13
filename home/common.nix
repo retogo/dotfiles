@@ -68,6 +68,8 @@
     sessionVariables = {
       EDITOR = "micro";
       VISUAL = "micro";
+      # Ghostty は Claude Code の OSC 8 ハイパーリンク自動検出に含まれないため強制有効化
+      FORCE_HYPERLINK = "1";
     };
 
     initContent = lib.mkBefore (builtins.readFile ../shell/common.sh);
