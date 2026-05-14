@@ -63,6 +63,14 @@
       lg = "lazygit";
       vi = "nvim";
       vim = "nvim";
+
+      # Aikido Safe Chain: パッケージ取得時に悪性パッケージを検出するラッパー
+      npm = "aikido-npm";
+      npx = "aikido-npx";
+      bun = "aikido-bun";
+      bunx = "aikido-bunx";
+      uv = "aikido-uv";
+      uvx = "aikido-uvx";
     };
 
     sessionVariables = {

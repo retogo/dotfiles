@@ -4,6 +4,7 @@
   "description": "npm packages that are not available in nixpkgs.",
   "private": true,
   "dependencies": {
+    "@aikidosec/safe-chain": "1.5.2",
     "@playwright/cli": "0.1.8"
   }
 }
