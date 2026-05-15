@@ -6,6 +6,19 @@ function cdp() {
   fi
 }
 
+# ghq 配下リポジトリの追加 worktree 限定で fzf 移動（メイン worktree は除外）
+function cdw() {
+  local selected_dir
+  selected_dir=$(ghq list -p | while IFS= read -r repo; do
+    git -C "$repo" worktree list --porcelain 2>/dev/null \
+      | awk '/^worktree / {print $2}' \
+      | tail -n +2
+  done | sort -u | fzf --reverse)
+  if [[ -n "$selected_dir" ]]; then
+    cd "$selected_dir"
+  fi
+}
+
 # メモ関数
 m(){
   local ts
