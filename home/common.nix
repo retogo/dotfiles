@@ -34,7 +34,11 @@
     opencode
     gnupg
     firebase-tools
-    google-cloud-sdk
+    (google-cloud-sdk.withExtraComponents [
+      google-cloud-sdk.components.gke-gcloud-auth-plugin
+    ])
+    kubectl
+    kubernetes-helm
 
     # Linter / Formatter
     (textlint.withPackages [
