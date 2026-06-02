@@ -56,6 +56,36 @@ let
         platforms = [ "aarch64-darwin" "x86_64-darwin" "x86_64-linux" "aarch64-linux" ];
       };
     };
+
+  # @textlint-ja/textlint-rule-preset-ai-writing は nixpkgs に無いため自前で組み立てる。
+  # config/.textlintrc.json の "@textlint-ja/preset-ai-writing" 表記が解決する実体がこれ。
+  # textlint.withPackages が $out/lib/node_modules を NODE_PATH に載せてルールを解決する。
+  #
+  # 方式: upstream の package-lock.json は resolved/integrity 欠落で fetchNpmDeps 不可、
+  # かつ devDeps ビルドが重いため、ビルド済み npm tarball + production 依存のみを展開する。
+  # 依存マニフェストは ./textlint-ai-writing-deps.json（main + production 48 件、tarball URL と SRI）。
+  #
+  # 新バージョン追従（min release age 7 日: 公開から 7 日以上経過した版のみ採用）:
+  #   1. lock=/tmp/aiw.lock; curl -fsSL https://raw.githubusercontent.com/textlint-ja/textlint-rule-preset-ai-writing/v<X.Y.Z>/package-lock.json -o "$lock"
+  #   2. lock の packages のうち dev!==true の relPath/version を取り、resolved/integrity が無いものは
+  #      registry の /<name>/<version> の dist.tarball / dist.integrity で補完
+  #   3. main は registry の /@textlint-ja%2Ftextlint-rule-preset-ai-writing/<X.Y.Z> の dist
+  #   4. {version, main:{url,hash}, deps:[{relPath,url,hash}...]} を textlint-ai-writing-deps.json に書き出す
+  textlint-rule-preset-ai-writing =
+    let
+      manifest = builtins.fromJSON (builtins.readFile ./textlint-ai-writing-deps.json);
+      # npm tarball は package/ 配下に内容を持つため --strip-components=1 で剥がす
+      unpack = dest: src: ''
+        mkdir -p "${dest}"
+        tar -xzf ${src} -C "${dest}" --strip-components=1
+      '';
+      extractDep = d: unpack ''$root/${d.relPath}'' (pkgs.fetchurl { inherit (d) url hash; });
+    in
+    pkgs.runCommandLocal "textlint-rule-preset-ai-writing-${manifest.version}" { } ''
+      root="$out/lib/node_modules"
+      ${unpack ''$root/@textlint-ja/textlint-rule-preset-ai-writing'' (pkgs.fetchurl { inherit (manifest.main) url hash; })}
+      ${lib.concatMapStrings extractDep manifest.deps}
+    '';
 in
 {
   home.stateVersion = "24.11";
@@ -102,6 +132,7 @@ in
     (textlint.withPackages [
       textlint-rule-preset-ja-technical-writing
       textlint-rule-preset-ja-spacing
+      textlint-rule-preset-ai-writing
     ])
     dprint
 
