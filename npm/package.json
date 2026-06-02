@@ -5,6 +5,7 @@
   "private": true,
   "dependencies": {
     "@aikidosec/safe-chain": "1.5.2",
-    "@playwright/cli": "0.1.8"
+    "@playwright/cli": "0.1.8",
+    "takt": "0.41.0"
   }
 }
