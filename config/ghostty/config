@@ -16,4 +16,4 @@ keybind = alt+l=goto_split:right
 keybind = super+shift+bracket_right=unbind
 keybind = super+shift+[=previous_tab
 keybind = ctrl+l=text:\x0c
-background-opacity-cells = false
+background-opacity-cells = true
