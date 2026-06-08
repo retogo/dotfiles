@@ -3,6 +3,7 @@ theme = GitHub Dark Default
 macos-option-as-alt = true
 split-divider-color = #999999
 unfocused-split-opacity = 0.7
+background-opacity = 0.75
 
 keybind = alt+right=esc:[1;3C
 keybind = alt+left=esc:[1;3D
@@ -15,3 +16,4 @@ keybind = alt+l=goto_split:right
 keybind = super+shift+bracket_right=unbind
 keybind = super+shift+[=previous_tab
 keybind = ctrl+l=text:\x0c
+background-opacity-cells = false
