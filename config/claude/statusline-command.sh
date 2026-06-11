@@ -9,8 +9,6 @@ used_percentage=$(echo "$input" | jq -r '.context_window.used_percentage // empt
 cwd=$(echo "$input" | jq -r '.workspace.current_dir')
 project_dir=$(echo "$input" | jq -r '.workspace.project_dir // empty')
 project_name=$(basename "$project_dir" 2>/dev/null)
-lines_added=$(echo "$input" | jq -r '.cost.total_lines_added // 0')
-lines_removed=$(echo "$input" | jq -r '.cost.total_lines_removed // 0')
 rate_5h=$(echo "$input" | jq -r '.rate_limits.five_hour.used_percentage // empty')
 resets_at=$(echo "$input" | jq -r '.rate_limits.five_hour.resets_at // empty')
 
@@ -19,6 +17,7 @@ reset="\033[0m"
 green="\033[32m"
 yellow="\033[33m"
 red="\033[31m"
+cyan="\033[36m"
 
 # キャッシュ設定
 cache_id=$(echo "$cwd" | md5 -q 2>/dev/null || echo "$cwd" | md5sum 2>/dev/null | cut -d' ' -f1)
@@ -52,6 +51,8 @@ git_branch=""
 git_remote_url=""
 git_staged=""
 git_modified=""
+git_ahead=""
+git_behind=""
 
 if [ -n "$cwd" ] && git -C "$cwd" rev-parse --git-dir > /dev/null 2>&1; then
     # リモートURLを取得（クリッカブルリンク用 — 変更頻度が低いのでキャッシュ外）
@@ -69,12 +70,20 @@ if [ -n "$cwd" ] && git -C "$cwd" rev-parse --git-dir > /dev/null 2>&1; then
         git_branch=$(git -C "$cwd" --no-optional-locks branch --show-current 2>/dev/null)
         cached_staged=$(git -C "$cwd" --no-optional-locks diff --cached --numstat 2>/dev/null | wc -l | tr -d ' ')
         cached_modified=$(git -C "$cwd" --no-optional-locks diff --numstat 2>/dev/null | wc -l | tr -d ' ')
-        echo "${git_branch}|${cached_staged}|${cached_modified}" > "$CACHE_FILE"
+        # upstream との差分（behind=未pull / ahead=未push）。upstream 未設定なら空
+        cached_ahead=""
+        cached_behind=""
+        ahead_behind=$(git -C "$cwd" --no-optional-locks rev-list --left-right --count '@{u}...HEAD' 2>/dev/null)
+        if [ -n "$ahead_behind" ]; then
+            cached_behind=$(echo "$ahead_behind" | cut -f1)
+            cached_ahead=$(echo "$ahead_behind" | cut -f2)
+        fi
+        echo "${git_branch}|${cached_staged}|${cached_modified}|${cached_ahead}|${cached_behind}" > "$CACHE_FILE"
     fi
 
     # キャッシュから読み込み
     if [ -f "$CACHE_FILE" ]; then
-        IFS='|' read -r git_branch git_staged git_modified < "$CACHE_FILE"
+        IFS='|' read -r git_branch git_staged git_modified git_ahead git_behind < "$CACHE_FILE"
     fi
 fi
 
@@ -160,19 +169,28 @@ if [ -n "$project_name" ]; then
 fi
 
 if [ -n "$git_branch" ]; then
-    # ブランチ名の後にgitステータスインジケーター（ファイル数付き）を付与
-    status_indicators=""
-    [ "$git_staged" -gt 0 ] 2>/dev/null && status_indicators="${status_indicators}${green}+${git_staged}${reset}"
-    [ "$git_modified" -gt 0 ] 2>/dev/null && status_indicators="${status_indicators}${yellow}~${git_modified}${reset}"
+    # ブランチ名の色で未コミットの有無を示す（緑=clean / 黄=staged または modified あり）
+    if [ "$git_staged" -gt 0 ] 2>/dev/null || [ "$git_modified" -gt 0 ] 2>/dev/null; then
+        branch_color="$yellow"
+    else
+        branch_color="$green"
+    fi
 
     if [ -n "$git_remote_url" ]; then
-        branch_display=$(make_link "${git_remote_url}/tree/${git_branch}" "$git_branch")
+        branch_text=$(make_link "${git_remote_url}/tree/${git_branch}" "$git_branch")
     else
-        branch_display="$git_branch"
+        branch_text="$git_branch"
     fi
+    branch_display="${branch_color}${branch_text}${reset}"
+
+    # ローカル↔リモートのズレ（↑=未push / ↓=未pull）。upstream 未設定なら無表示
+    push_status=""
+    [ "$git_ahead" -gt 0 ] 2>/dev/null && push_status="${push_status}${cyan}↑${git_ahead}${reset}"
+    [ "$git_behind" -gt 0 ] 2>/dev/null && push_status="${push_status}${red}↓${git_behind}${reset}"
+
     line1="${line1} | 🌿 ${branch_display}"
-    if [ -n "$status_indicators" ]; then
-        line1="${line1} ${status_indicators}"
+    if [ -n "$push_status" ]; then
+        line1="${line1} ${push_status}"
     fi
 
     if [ -n "$git_mr_iid" ]; then
@@ -184,13 +202,6 @@ if [ -n "$git_branch" ]; then
         line1="${line1} ${mr_display}"
     fi
 fi
-
-# セッション変更行数
-lines_display=""
-if [ "$lines_added" -gt 0 ] 2>/dev/null || [ "$lines_removed" -gt 0 ] 2>/dev/null; then
-    lines_display=" | ${green}+${lines_added}${reset} ${red}-${lines_removed}${reset}"
-fi
-line1="${line1}${lines_display}"
 
 # ---- 2行目: Context window usage プログレスバー + Rate Limit ----
 pct=$(echo "$used_percentage" | cut -d. -f1)
