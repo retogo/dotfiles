@@ -150,20 +150,62 @@ make_link() {
     printf '\e]8;;%s\a%s\e]8;;\a' "$url" "$text"
 }
 
-# ---- 1行目: [model] 📁 {project} | 🌿 {branch}{git-status} ----
-line1=""
-line1="${line1}[${model_name}]"
+# ---- 1行目: [model] 📁 {project} → {cwd} | 🌿 {branch} {push} {mr} ----
+# 端末幅に応じて付加要素を間引く。Claude Code は COLUMNS をセットする（v2.1.153+。
+# 各行は幅で truncate され折り返さないため、溢れる前に優先度の低い要素を落とす）。
+# COLUMNS 未設定（旧版）なら 999 として全要素を表示。絵文字 📁 🌿 は 2 幅で概算。
+avail=$(( ${COLUMNS:-999} - 1 ))
 
-if [ -n "$project_name" ]; then
+# モデル名の冗長な "(1M context)" は " 1M" に圧縮（1M である事実は残す）
+model_disp="${model_name/ (1M context)/ 1M}"
+
+# push（未push/未pull）のプレーン表記（幅見積もり用）
+push_plain=""
+[ "$git_ahead" -gt 0 ] 2>/dev/null && push_plain="↑${git_ahead}"
+[ "$git_behind" -gt 0 ] 2>/dev/null && push_plain="${push_plain}↓${git_behind}"
+
+# cwd suffix（current_dir が project_dir と異なる場合のみ）
+cwd_name=""
+if [ -n "$cwd" ] && [ "$cwd" != "$project_dir" ]; then
+    cwd_name=$(basename "$cwd")
+fi
+
+# 必須要素（モデル + ブランチ + push）の概算幅
+branch_w=0
+if [ -n "$git_branch" ]; then
+    branch_w=$(( 6 + ${#git_branch} ))                       # " | 🌿 <branch>"
+    [ -n "$push_plain" ] && branch_w=$(( branch_w + 1 + ${#push_plain} ))
+fi
+used=$(( 2 + ${#model_disp} + branch_w ))                    # "[<model>]" + 必須ブランチ
+# 必須すら溢れるならモデル名を先頭語だけに短縮（例: "Opus 4.8" → "Opus"）
+if [ "$used" -gt "$avail" ]; then
+    model_disp="${model_disp%% *}"
+    used=$(( 2 + ${#model_disp} + branch_w ))
+fi
+
+# 残り幅で付加要素を優先順（project > MR > cwd suffix）に採用
+show_project=0; show_mr=0; show_cwd=0
+if [ -n "$project_name" ] && [ $(( used + 4 + ${#project_name} )) -le "$avail" ]; then
+    show_project=1; used=$(( used + 4 + ${#project_name} ))  # " 📁 <project>"
+fi
+if [ -n "$git_mr_iid" ] && [ $(( used + 2 + ${#git_mr_iid} )) -le "$avail" ]; then
+    show_mr=1; used=$(( used + 2 + ${#git_mr_iid} ))         # " !<iid>"
+fi
+if [ -n "$cwd_name" ] && [ "$show_project" -eq 1 ] && [ $(( used + 3 + ${#cwd_name} )) -le "$avail" ]; then
+    show_cwd=1                                               # " → <cwd>"
+fi
+
+# --- 視覚順に組み立て ---
+line1="[${model_disp}]"
+
+if [ "$show_project" -eq 1 ]; then
     if [ -n "$git_remote_url" ]; then
         project_display=$(make_link "$git_remote_url" "$project_name")
     else
         project_display="$project_name"
     fi
     line1="${line1} 📁 ${project_display}"
-    # current_dirがproject_dirと異なる場合に表示
-    if [ -n "$cwd" ] && [ "$cwd" != "$project_dir" ]; then
-        cwd_name=$(basename "$cwd")
+    if [ "$show_cwd" -eq 1 ]; then
         line1="${line1} → ${yellow}${cwd_name}${reset}"
     fi
 fi
@@ -181,19 +223,15 @@ if [ -n "$git_branch" ]; then
     else
         branch_text="$git_branch"
     fi
-    branch_display="${branch_color}${branch_text}${reset}"
+    line1="${line1} | 🌿 ${branch_color}${branch_text}${reset}"
 
     # ローカル↔リモートのズレ（↑=未push / ↓=未pull）。upstream 未設定なら無表示
     push_status=""
-    [ "$git_ahead" -gt 0 ] 2>/dev/null && push_status="${push_status}${cyan}↑${git_ahead}${reset}"
+    [ "$git_ahead" -gt 0 ] 2>/dev/null && push_status="${cyan}↑${git_ahead}${reset}"
     [ "$git_behind" -gt 0 ] 2>/dev/null && push_status="${push_status}${red}↓${git_behind}${reset}"
+    [ -n "$push_status" ] && line1="${line1} ${push_status}"
 
-    line1="${line1} | 🌿 ${branch_display}"
-    if [ -n "$push_status" ]; then
-        line1="${line1} ${push_status}"
-    fi
-
-    if [ -n "$git_mr_iid" ]; then
+    if [ "$show_mr" -eq 1 ]; then
         if [ -n "$git_mr_url" ]; then
             mr_display=$(make_link "$git_mr_url" "!${git_mr_iid}")
         else
