@@ -191,7 +191,6 @@ in
     executable = true;
   };
   home.file.".claude/skills/diff-env/SKILL.md".source = ../config/claude/skills/diff-env/SKILL.md;
-  home.file.".claude/themes/github-dark.json".source = ../config/claude/themes/github-dark.json;
   home.file.".npmrc".source = ../config/.npmrc;
   home.file.".textlintrc.json".source = ../config/.textlintrc.json;
 
