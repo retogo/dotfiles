@@ -70,6 +70,8 @@ if [ -n "$cwd" ] && git -C "$cwd" rev-parse --git-dir > /dev/null 2>&1; then
         git_branch=$(git -C "$cwd" --no-optional-locks branch --show-current 2>/dev/null)
         cached_staged=$(git -C "$cwd" --no-optional-locks diff --cached --numstat 2>/dev/null | wc -l | tr -d ' ')
         cached_modified=$(git -C "$cwd" --no-optional-locks diff --numstat 2>/dev/null | wc -l | tr -d ' ')
+        # untracked（新規ファイル）は git diff には現れないため ls-files で別途数える
+        cached_untracked=$(git -C "$cwd" --no-optional-locks ls-files --others --exclude-standard 2>/dev/null | wc -l | tr -d ' ')
         # upstream との差分（behind=未pull / ahead=未push）。upstream 未設定なら空
         cached_ahead=""
         cached_behind=""
@@ -78,12 +80,12 @@ if [ -n "$cwd" ] && git -C "$cwd" rev-parse --git-dir > /dev/null 2>&1; then
             cached_behind=$(echo "$ahead_behind" | cut -f1)
             cached_ahead=$(echo "$ahead_behind" | cut -f2)
         fi
-        echo "${git_branch}|${cached_staged}|${cached_modified}|${cached_ahead}|${cached_behind}" > "$CACHE_FILE"
+        echo "${git_branch}|${cached_staged}|${cached_modified}|${cached_untracked}|${cached_ahead}|${cached_behind}" > "$CACHE_FILE"
     fi
 
     # キャッシュから読み込み
     if [ -f "$CACHE_FILE" ]; then
-        IFS='|' read -r git_branch git_staged git_modified git_ahead git_behind < "$CACHE_FILE"
+        IFS='|' read -r git_branch git_staged git_modified git_untracked git_ahead git_behind < "$CACHE_FILE"
     fi
 fi
 
@@ -164,6 +166,12 @@ push_plain=""
 [ "$git_ahead" -gt 0 ] 2>/dev/null && push_plain="↑${git_ahead}"
 [ "$git_behind" -gt 0 ] 2>/dev/null && push_plain="${push_plain}↓${git_behind}"
 
+# 未コミット内訳マーカー（+staged ~modified ?untracked）。色なしのプレーン文字列
+git_marker=""
+[ "$git_staged" -gt 0 ] 2>/dev/null && git_marker="${git_marker} +${git_staged}"
+[ "$git_modified" -gt 0 ] 2>/dev/null && git_marker="${git_marker} ~${git_modified}"
+[ "$git_untracked" -gt 0 ] 2>/dev/null && git_marker="${git_marker} ?${git_untracked}"
+
 # cwd suffix（current_dir が project_dir と異なる場合のみ）
 cwd_name=""
 if [ -n "$cwd" ] && [ "$cwd" != "$project_dir" ]; then
@@ -174,6 +182,7 @@ fi
 branch_w=0
 if [ -n "$git_branch" ]; then
     branch_w=$(( 6 + ${#git_branch} ))                       # " | 🌿 <branch>"
+    [ -n "$git_marker" ] && branch_w=$(( branch_w + ${#git_marker} ))
     [ -n "$push_plain" ] && branch_w=$(( branch_w + 1 + ${#push_plain} ))
 fi
 used=$(( 2 + ${#model_disp} + branch_w ))                    # "[<model>]" + 必須ブランチ
@@ -211,8 +220,8 @@ if [ "$show_project" -eq 1 ]; then
 fi
 
 if [ -n "$git_branch" ]; then
-    # ブランチ名の色で未コミットの有無を示す（緑=clean / 黄=staged または modified あり）
-    if [ "$git_staged" -gt 0 ] 2>/dev/null || [ "$git_modified" -gt 0 ] 2>/dev/null; then
+    # ブランチ名の色で未コミットの有無を示す（緑=clean / 黄=staged・modified・untracked いずれかあり）
+    if [ "$git_staged" -gt 0 ] 2>/dev/null || [ "$git_modified" -gt 0 ] 2>/dev/null || [ "$git_untracked" -gt 0 ] 2>/dev/null; then
         branch_color="$yellow"
     else
         branch_color="$green"
@@ -223,7 +232,8 @@ if [ -n "$git_branch" ]; then
     else
         branch_text="$git_branch"
     fi
-    line1="${line1} | 🌿 ${branch_color}${branch_text}${reset}"
+    # ブランチ名のみクリッカブルにし、内訳マーカー（+staged ~modified ?untracked）は外側に同色で添える
+    line1="${line1} | 🌿 ${branch_color}${branch_text}${git_marker}${reset}"
 
     # ローカル↔リモートのズレ（↑=未push / ↓=未pull）。upstream 未設定なら無表示
     push_status=""
