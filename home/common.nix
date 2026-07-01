@@ -93,6 +93,8 @@ in
   home.sessionPath = [
     "$HOME/.local/bin"
     "$HOME/.npm-global/node_modules/.bin"
+    # bun link した CLI (~/.bun/bin/<cmd>) を使う
+    "$HOME/.bun/bin"
   ];
 
   home.packages = with pkgs; [
