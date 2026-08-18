@@ -24,9 +24,9 @@ gui:
   showIcons: true
   nerdFontsVersion: "3"
 git:
-  pagers:
+  diffRenderers:
     - colorArg: always
-      pager: delta --dark --paging=never
+      command: delta --dark --paging=never
 keybinding:
   universal:
     quit: q
