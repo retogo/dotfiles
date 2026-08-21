@@ -145,7 +145,11 @@ in
     tree
     glow
     yq
+
+    # LLM Runtime
+    # llama-cpp は Darwin では metalSupport がデフォルト有効（GPU 推論が効く）。
     ollama
+    llama-cpp
   ];
 
   programs.home-manager.enable = true;
