@@ -23,27 +23,16 @@ cyan="\033[36m"
 cache_id=$(echo "$cwd" | md5 -q 2>/dev/null || echo "$cwd" | md5sum 2>/dev/null | cut -d' ' -f1)
 CACHE_FILE="/tmp/statusline-git-cache-${cache_id}"
 CACHE_MAX_AGE=5  # 秒
-MR_CACHE_FILE="/tmp/statusline-mr-cache-${cache_id}"
-MR_CACHE_MAX_AGE=60  # 秒 (glab はネットワーク呼び出しなので長め)
 
-file_is_stale() {
-    local file=$1 max_age=$2
-    if [ ! -f "$file" ]; then
+cache_is_stale() {
+    if [ ! -f "$CACHE_FILE" ]; then
         return 0
     fi
     local now file_age age
     now=$(date +%s)
-    file_age=$(stat -f %m "$file" 2>/dev/null || stat -c %Y "$file" 2>/dev/null)
+    file_age=$(stat -f %m "$CACHE_FILE" 2>/dev/null || stat -c %Y "$CACHE_FILE" 2>/dev/null)
     age=$(( now - file_age ))
-    [ "$age" -ge "$max_age" ]
-}
-
-cache_is_stale() {
-    file_is_stale "$CACHE_FILE" "$CACHE_MAX_AGE"
-}
-
-mr_cache_is_stale() {
-    file_is_stale "$MR_CACHE_FILE" "$MR_CACHE_MAX_AGE"
+    [ "$age" -ge "$CACHE_MAX_AGE" ]
 }
 
 # git情報を取得（gitリポジトリの場合のみ）
@@ -89,32 +78,6 @@ if [ -n "$cwd" ] && git -C "$cwd" rev-parse --git-dir > /dev/null 2>&1; then
     fi
 fi
 
-# MR 情報を取得 (GitLab リモート かつ glab が利用可能な場合のみ)
-git_mr_iid=""
-git_mr_url=""
-
-if [ -n "$git_branch" ] && echo "$git_remote_url" | grep -qi "gitlab" && command -v glab > /dev/null 2>&1; then
-    if mr_cache_is_stale; then
-        mr_iid=""
-        mr_url=""
-        mr_json=$(cd "$cwd" && glab mr list --source-branch "$git_branch" --output json 2>/dev/null)
-        if [ -n "$mr_json" ]; then
-            mr_iid=$(echo "$mr_json" | jq -r '.[0].iid // empty' 2>/dev/null)
-            mr_url=$(echo "$mr_json" | jq -r '.[0].web_url // empty' 2>/dev/null)
-        fi
-        echo "${git_branch}|${mr_iid}|${mr_url}" > "$MR_CACHE_FILE"
-    fi
-
-    if [ -f "$MR_CACHE_FILE" ]; then
-        IFS='|' read -r cached_mr_branch git_mr_iid git_mr_url < "$MR_CACHE_FILE"
-        # キャッシュ書き込み後にブランチが変わった場合は無効化
-        if [ "$cached_mr_branch" != "$git_branch" ]; then
-            git_mr_iid=""
-            git_mr_url=""
-        fi
-    fi
-fi
-
 # プログレスバーを構築（10文字、▓=使用済み、░=残り）
 build_progress_bar() {
     local pct=${1:-0}
@@ -152,7 +115,7 @@ make_link() {
     printf '\e]8;;%s\a%s\e]8;;\a' "$url" "$text"
 }
 
-# ---- 1行目: [model] 📁 {project} → {cwd} | 🌿 {branch} {push} {mr} ----
+# ---- 1行目: [model] 📁 {project} → {cwd} | 🌿 {branch} {push} ----
 # 端末幅に応じて付加要素を間引く。Claude Code は COLUMNS をセットする（v2.1.153+。
 # 各行は幅で truncate され折り返さないため、溢れる前に優先度の低い要素を落とす）。
 # COLUMNS 未設定（旧版）なら 999 として全要素を表示。絵文字 📁 🌿 は 2 幅で概算。
@@ -192,13 +155,10 @@ if [ "$used" -gt "$avail" ]; then
     used=$(( 2 + ${#model_disp} + branch_w ))
 fi
 
-# 残り幅で付加要素を優先順（project > MR > cwd suffix）に採用
-show_project=0; show_mr=0; show_cwd=0
+# 残り幅で付加要素を優先順（project > cwd suffix）に採用
+show_project=0; show_cwd=0
 if [ -n "$project_name" ] && [ $(( used + 4 + ${#project_name} )) -le "$avail" ]; then
     show_project=1; used=$(( used + 4 + ${#project_name} ))  # " 📁 <project>"
-fi
-if [ -n "$git_mr_iid" ] && [ $(( used + 2 + ${#git_mr_iid} )) -le "$avail" ]; then
-    show_mr=1; used=$(( used + 2 + ${#git_mr_iid} ))         # " !<iid>"
 fi
 if [ -n "$cwd_name" ] && [ "$show_project" -eq 1 ] && [ $(( used + 3 + ${#cwd_name} )) -le "$avail" ]; then
     show_cwd=1                                               # " → <cwd>"
@@ -240,15 +200,6 @@ if [ -n "$git_branch" ]; then
     [ "$git_ahead" -gt 0 ] 2>/dev/null && push_status="${cyan}↑${git_ahead}${reset}"
     [ "$git_behind" -gt 0 ] 2>/dev/null && push_status="${push_status}${red}↓${git_behind}${reset}"
     [ -n "$push_status" ] && line1="${line1} ${push_status}"
-
-    if [ "$show_mr" -eq 1 ]; then
-        if [ -n "$git_mr_url" ]; then
-            mr_display=$(make_link "$git_mr_url" "!${git_mr_iid}")
-        else
-            mr_display="!${git_mr_iid}"
-        fi
-        line1="${line1} ${mr_display}"
-    fi
 fi
 
 # ---- 2行目: Context window usage プログレスバー + Rate Limit ----
