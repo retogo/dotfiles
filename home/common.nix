@@ -1,6 +1,35 @@
 { pkgs, lib, ... }:
 
 let
+  # bun 1.4 は nixpkgs 未反映（unstable / master とも 1.3.13。2026-08-24 時点）のため、
+  # 公式リリースの zip に差し替えて先行して使う。
+  # nixpkgs が 1.4 以降を取り込んだらこの override を消して pkgs.bun に戻すこと。
+  # ハッシュ更新:
+  #   nix store prefetch-file --hash-type sha256 \
+  #     https://github.com/oven-sh/bun/releases/download/bun-v<X.Y.Z>/<asset>.zip
+  bun = pkgs.bun.overrideAttrs (finalAttrs: prevAttrs: {
+    version = "1.4.0";
+    # upstream の src は finalAttrs.passthru.sources を参照するため、sources を差し替えれば src も追従する。
+    # src を直接 override していないことを nixpkgs が警告するが、上記のとおり追従済み。
+    __intentionallyOverridingVersion = true;
+    passthru = prevAttrs.passthru // {
+      sources = {
+        aarch64-darwin = pkgs.fetchurl {
+          url = "https://github.com/oven-sh/bun/releases/download/bun-v${finalAttrs.version}/bun-darwin-aarch64.zip";
+          hash = "sha256-xmnpf2Fk4cluBwF0jbmN+ndJKQjL2DlMdVcTSnNd44E=";
+        };
+        aarch64-linux = pkgs.fetchurl {
+          url = "https://github.com/oven-sh/bun/releases/download/bun-v${finalAttrs.version}/bun-linux-aarch64.zip";
+          hash = "sha256-SxozLuhhmD65O8/m93D/+U4+MbLDiL2uo8jtNeWO7Q4=";
+        };
+        x86_64-linux = pkgs.fetchurl {
+          url = "https://github.com/oven-sh/bun/releases/download/bun-v${finalAttrs.version}/bun-linux-x64-baseline.zip";
+          hash = "sha256-GE+0WV8NQBohfPfHjBvEMLqDMU2reouUgFurv3+nCX8=";
+        };
+      };
+    };
+  });
+
   # Notion CLI (ntn.dev) は nixpkgs に無いため自前で derivation 化。
   # 新バージョン追従: version を上げ、4 プラットフォーム分の sha256 を
   #   curl -fsSL https://ntn.dev/releases/v<X.Y.Z>/ntn-<target>.tar.gz.sha256
@@ -102,7 +131,7 @@ in
     nodejs
     python3
     go
-    bun
+    bun # nixpkgs 未反映の 1.4 系。let ブロックの override を参照
     rustup
 
     # Dev Tools
