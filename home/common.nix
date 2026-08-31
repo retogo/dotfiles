@@ -103,9 +103,14 @@
   home.file.".npm-global/package-lock.json".source = ../npm/package-lock.json;
 
   # npm ci は lockfile 通りに node_modules を作り直すため冪等。
-  # PATH ではなく store パスを参照するので mise 側の node の有無に依存しない。
+  # node は mise 管理で Nix profile に無いが、依存の lifecycle script が `node` を
+  # PATH から起動するため、activation の間だけ nixpkgs の node を PATH に通す。
+  # これで mise の導入状態に依存せず switch 単体で完結する。
   home.activation.npmGlobalInstall = lib.hm.dag.entryAfter [ "writeBoundary" ] ''
-    run ${pkgs.nodejs}/bin/npm ci --prefix "$HOME/.npm-global" --silent --no-fund --no-audit
+    (
+      export PATH="${pkgs.nodejs}/bin:$PATH"
+      run ${pkgs.nodejs}/bin/npm ci --prefix "$HOME/.npm-global" --loglevel=error --no-fund --no-audit
+    )
   '';
 
   # dotfiles
