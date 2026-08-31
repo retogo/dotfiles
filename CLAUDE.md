@@ -19,7 +19,8 @@ shell/
   darwin.sh            # macOS 固有の initContent（Docker, uuidgen）
   darwin-profile.sh    # macOS 固有の profileExtra（Homebrew, Obsidian PATH）
 npm/
-  package.json         # nixpkgs に無い npm パッケージの宣言。switch 時に ~/.npm-global へ展開
+  package.json         # npm パッケージの宣言。switch 時に ~/.npm-global へ npm ci で展開
+  package-lock.json    # 上記の推移的依存の固定。npm install で再生成する
 ```
 
 ## ビルド・適用
@@ -53,18 +54,19 @@ home-manager switch --flake .#linux  --impure   # Linux
 
 追加するパッケージをどこで宣言するかは、上から順に機械的に判定する。裁量で判断しない。
 
-| # | 条件              | 管理先                                              |
-| - | ----------------- | --------------------------------------------------- |
-| 1 | node / bun / java | `config/mise/config.toml`                           |
-| 2 | nixpkgs にある    | `home/common.nix` の `home.packages`                |
-| 3 | npm パッケージ    | `npm/package.json`                                  |
-| 4 | 上記以外          | `home/common.nix` の `let` ブロックで derivation 化 |
+| # | 条件              | 管理先                                                 |
+| - | ----------------- | ------------------------------------------------------ |
+| 1 | node / bun / java | `config/mise/config.toml`                              |
+| 2 | nixpkgs にある    | `home/common.nix` の `home.packages`                   |
+| 3 | npm パッケージ    | `npm/package.json`                                     |
+| 4 | 上記以外          | `config/mise/config.toml`（`http` / `github` backend） |
 
 - 1 が例外なのは、これらの言語自身がバージョン切り替え機構を持たないため。go は `GOTOOLCHAIN`、rust は `rustup` + `rust-toolchain.toml`、python は `uv` が `requires-python` を解決するので、Nix に置く
 - 2 の判定は `nix eval` で確認する
-- 3 は `home-manager switch` 時に `~/.npm-global` へ `npm install` され、`~/.npm-global/node_modules/.bin` が PATH に通る
-- 4 の版追従は `bumping-vendored-derivation` skill に従う
+- 3 は `home-manager switch` 時に `~/.npm-global` へ `npm ci` で展開され、`~/.npm-global/node_modules/.bin` が PATH に通る。単体 CLI も、textlint のようにプリセットと `node_modules` を共有する必要があるツールチェーンも、ここにまとめる
+- `npm/package.json` を編集したら `npm install --package-lock-only --prefix npm` で `package-lock.json` を再生成して両方 commit する
 - バージョンはいずれの管理先でも固定する。npm パッケージは min release age 7 日を満たす版のみ採用する
+- 自前 derivation は持たない。nixpkgs に無いものは mise の backend で解決する
 
 ### mise
 

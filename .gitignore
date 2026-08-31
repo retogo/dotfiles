@@ -19,9 +19,8 @@ __MACOSX/
 result
 result-*
 
-# npm (home.activation で生成)
+# npm (node_modules のみ。package-lock.json は commit する)
 npm/node_modules
-npm/package-lock.json
 
 # Editor
 *.swp

@@ -1,11 +1,15 @@
 {
   "name": "dotfiles-npm-global",
   "version": "0.0.0",
-  "description": "npm packages that are not available in nixpkgs.",
+  "description": "npm packages installed into ~/.npm-global. See CLAUDE.md for placement rules.",
   "private": true,
   "dependencies": {
     "@aikidosec/safe-chain": "1.5.12",
     "@playwright/cli": "0.1.15",
-    "takt": "0.50.0"
+    "@textlint-ja/textlint-rule-preset-ai-writing": "1.7.0",
+    "takt": "0.50.0",
+    "textlint": "15.7.1",
+    "textlint-rule-preset-ja-spacing": "2.4.3",
+    "textlint-rule-preset-ja-technical-writing": "10.0.1"
   }
 }

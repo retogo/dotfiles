@@ -19,3 +19,6 @@ fi
 
 # flake.nix が $USER / $HOME を builtins.getEnv で参照するため --impure が必要
 nix run home-manager -- switch --flake "${DOTFILES_DIR}#${CONFIG}" -b backup --impure
+
+# mise 管理のランタイム（config/mise/config.toml）を実体化する
+"$HOME/.nix-profile/bin/mise" install
