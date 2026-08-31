@@ -47,17 +47,30 @@ home-manager switch --flake .#linux  --impure   # Linux
 - 環境固有の設定は `home/{darwin,linux}.nix` + `shell/{darwin,darwin-profile}.sh` で分離
 - `initExtra` は非推奨。`initContent` を使うこと（`lib.mkBefore` / `lib.mkAfter` で順序制御）
 - unfree パッケージは `flake.nix` の `allowUnfreePredicate` で明示的に許可する
-- nixpkgs に無い npm パッケージは `npm/package.json` に追記（バージョン固定）。`home-manager switch` 時に `~/.npm-global` へ `npm install` され、`~/.npm-global/node_modules/.bin` が PATH に通る
-
-### Nix と mise の境界線
-
-パッケージをどちらで入れるかは次の規則で機械的に決める。裁量で判断しない。
-
-- **原則: nixpkgs にあるものは Nix、無いものは mise**。判定は `nix eval` で確認できる
-- **例外: node / bun / java は mise**（`config/mise/config.toml`）。言語自身がバージョン切り替え機構を持たず、プロジェクト単位で切り替える必要があるため
-  - go（`GOTOOLCHAIN`）・rust（`rustup` + `rust-toolchain.toml`）・python（`uv` が `requires-python` を解決）は切り替え機構を言語側が持つので Nix に据え置く
-- mise 自体は nixpkgs から入れる（`programs.mise`）。並立する 2 系統ではなく、Nix が mise を導入する層構造にする
-- 迷ったら `which <cmd>` で判別できる。`/nix/store/...` なら Nix、`~/.local/share/mise/...` なら mise
-- `programs.mise.package` は既定が `null` で、null だとシェル統合が入らないため必ず明示する
-- `~/.config/mise/config.toml` は store への symlink（読み取り専用）なので `mise use -g` は使えない。`config/mise/config.toml` を編集して `./install.sh` し直す
 - `home.username` / `home.homeDirectory` はリポジトリに固定値を含めず、`flake.nix` で `builtins.getEnv "USER"` / `"HOME"` から取得する。これにより `--impure` 評価が必須になる
+
+## パッケージの管理先
+
+追加するパッケージをどこで宣言するかは、上から順に機械的に判定する。裁量で判断しない。
+
+| # | 条件              | 管理先                                              |
+| - | ----------------- | --------------------------------------------------- |
+| 1 | node / bun / java | `config/mise/config.toml`                           |
+| 2 | nixpkgs にある    | `home/common.nix` の `home.packages`                |
+| 3 | npm パッケージ    | `npm/package.json`                                  |
+| 4 | 上記以外          | `home/common.nix` の `let` ブロックで derivation 化 |
+
+- 1 が例外なのは、これらの言語自身がバージョン切り替え機構を持たないため。go は `GOTOOLCHAIN`、rust は `rustup` + `rust-toolchain.toml`、python は `uv` が `requires-python` を解決するので、Nix に置く
+- 2 の判定は `nix eval` で確認する
+- 3 は `home-manager switch` 時に `~/.npm-global` へ `npm install` され、`~/.npm-global/node_modules/.bin` が PATH に通る
+- 4 の版追従は `bumping-vendored-derivation` skill に従う
+- バージョンはいずれの管理先でも固定する。npm パッケージは min release age 7 日を満たす版のみ採用する
+
+### mise
+
+- mise 自体は nixpkgs から入れる（`programs.mise`）。Nix が mise を導入する層構造にし、2 系統を並立させない
+- `programs.mise.package` を明示する。既定は `null` で、`null` のままだとシェル統合が生成されない
+- `programs.mise.globalConfig` は空のままにする。設定すると module が `~/.config/mise/config.toml` を生成し、`xdg.configFile` の同名エントリと衝突する
+- `~/.config/mise/config.toml` は store への symlink なので `mise use -g` は使えない。`config/mise/config.toml` を編集して `./install.sh` し直す
+- プロジェクト単位の上書きは各リポジトリの `mise.toml` で行う
+- `mise activate` は対話シェルにしか効かない。非対話プロセスから解決させるため `~/.local/share/mise/shims` を `home.sessionPath` に入れる

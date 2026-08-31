@@ -95,19 +95,16 @@ in
     "$HOME/.npm-global/node_modules/.bin"
     # bun link した CLI (~/.bun/bin/<cmd>) を使う
     "$HOME/.bun/bin"
-    # mise の shim。非対話プロセス（GUI アプリ・エディタから起動されるコマンド等）でも
-    # mise 管理のランタイムを解決させる。対話シェルでは mise activate が優先される。
+    # 非対話プロセスから mise 管理のランタイムを解決させる
     "$HOME/.local/share/mise/shims"
   ];
 
   home.packages = with pkgs; [
     # Languages & Runtimes
-    # node / bun / java は mise 管理（config/mise/config.toml）。
-    # 言語自身にバージョン切り替え機構が無く、プロジェクト単位で切り替える必要があるため。
-    # 以下は切り替え機構を言語側が持つので Nix に据え置く。
-    python3 # プロジェクトの処理系は uv が用意する。これは ad-hoc 実行用
-    go # GOTOOLCHAIN が go.mod を見て必要なツールチェーンを自動取得する
-    rustup # rust-toolchain.toml でプロジェクト単位に解決する
+    # node / bun / java は mise 管理（config/mise/config.toml）
+    python3
+    go
+    rustup
 
     # Dev Tools
     uv
@@ -160,10 +157,7 @@ in
   programs.home-manager.enable = true;
   programs.starship.enable = true;
 
-  # node / bun / java のバージョン管理。
-  # package は既定が null で、null のままだとシェル統合が入らないため明示する。
-  # 設定の実体は config/mise/config.toml に置くので globalConfig は空のままにする
-  # （空でない場合 module 側が xdg.configFile."mise/config.toml" を書いて衝突する）。
+  # 設定の実体は config/mise/config.toml。globalConfig は空のままにする
   programs.mise = {
     enable = true;
     package = pkgs.mise;
@@ -199,8 +193,7 @@ in
   # nixpkgs に無い npm パッケージを package.json で宣言管理
   home.file.".npm-global/package.json".source = ../npm/package.json;
 
-  # node は mise 管理に移したが、ここは PATH ではなく store パスを直接参照するため、
-  # switch 時点で mise 側の node が未インストールでも決定的に動く。
+  # PATH ではなく store パスを参照するので mise 側の node の有無に依存しない
   home.activation.npmGlobalInstall = lib.hm.dag.entryAfter [ "writeBoundary" ] ''
     run ${pkgs.nodejs}/bin/npm install --prefix "$HOME/.npm-global" --silent --no-fund --no-audit
   '';

@@ -1,22 +1,6 @@
-# mise が管理する言語ランタイム。
-#
-# 振り分け基準は「言語自身がバージョン切り替え機構を持つか」:
-#   持たない -> ここ (mise)
-#     node / bun / java
-#   持つ     -> Nix 据え置き (home/common.nix)
-#     go     : GOTOOLCHAIN が go.mod を見て必要なツールチェーンを自動取得する
-#     rust   : rustup が rust-toolchain.toml で解決する
-#     python : uv が requires-python から処理系を用意する
-#
-# バージョンは flake.lock と同様に厳密固定する。
-# プロジェクト単位で上書きする場合は各リポジトリに mise.toml を置く。
-#
-# 更新手順:
-#   mise ls-remote <tool> で候補を確認し、min release age 7 日を満たす版に更新する
+# 管理先の判定規則は CLAUDE.md「パッケージの管理先」を参照。
+# 更新時は mise ls-remote <tool> で候補を確認する。
 [tools]
-# nixpkgs と同じ 24.18.1 を維持（移行時点では版を変えない）
 node = "24.18.1"
-# nixpkgs は 1.3.13 止まりだった。mise 移行の主目的がこの 1.4.0
 bun = "1.4.0"
-# nixpkgs の jdk 21.0.11 と同じ Java バージョンを temurin で取得する
 java = "temurin-21.0.11+10.0.LTS"
