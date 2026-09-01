@@ -5,7 +5,8 @@
   # Claude Code は auto update を利用するため Nix 管理外 (~/.local/bin)
   home.sessionPath = [
     "$HOME/.local/bin"
-    "$HOME/.npm-global/node_modules/.bin"
+    # npm/package.json の直接依存が持つ bin だけを集めた場所（npm/link-bins.mjs が生成）
+    "$HOME/.npm-global/bin"
     # bun link した CLI (~/.bun/bin/<cmd>) を使う
     "$HOME/.bun/bin"
     # 非対話プロセスから mise 管理のランタイムを解決させる
@@ -106,14 +107,12 @@
   # node は mise 管理で Nix profile に無いが、依存の lifecycle script が `node` を
   # PATH から起動するため、activation の間だけ nixpkgs の node を PATH に通す。
   # これで mise の導入状態に依存せず switch 単体で完結する。
+  # PATH に通すのは link-bins.mjs が作る bin/ であって node_modules/.bin ではない。
   home.activation.npmGlobalInstall = lib.hm.dag.entryAfter [ "writeBoundary" ] ''
     (
       export PATH="${pkgs.nodejs}/bin:$PATH"
       run ${pkgs.nodejs}/bin/npm ci --prefix "$HOME/.npm-global" --loglevel=error --no-fund --no-audit
-      # codex は公式インストーラ管理（CLAUDE.md「パッケージの管理先」#0）。takt の
-      # 推移的依存で入る .bin/codex が ~/.local/bin/codex を shadow しうるので外す。
-      # @openai/codex-sdk はパッケージを require.resolve で引くため、この bin は不要。
-      run rm -f "$HOME/.npm-global/node_modules/.bin/codex"
+      run ${pkgs.nodejs}/bin/node ${../npm/link-bins.mjs} "$HOME/.npm-global"
     )
   '';
 

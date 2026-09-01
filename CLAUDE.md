@@ -21,6 +21,7 @@ shell/
 npm/
   package.json         # npm パッケージの宣言。switch 時に ~/.npm-global へ npm ci で展開
   package-lock.json    # 上記の推移的依存の固定。npm install で再生成する
+  link-bins.mjs        # 直接依存の bin だけを ~/.npm-global/bin へ張る（switch 時に実行）
 ```
 
 ## ビルド・適用
@@ -64,10 +65,12 @@ home-manager switch --flake .#linux  --impure   # Linux
 
 - 0 は Claude Code と codex。どちらも self-update 機構を自身に持ち、更新のたびに宣言と実体がずれるため、宣言的管理から外して各公式インストーラに任せる
   - codex は `curl -fsSL https://chatgpt.com/codex/install.sh | sh` で入れる。`npm install -g` は使わない（npm の prefix が mise の node install ディレクトリを指すため、mise 管理下に紛れ込む）
-  - takt の推移的依存として `~/.npm-global/node_modules/.bin/codex` も入るが、PATH は `~/.local/bin` が先なので公式インストーラ版が優先される
+  - takt が `@openai/codex-sdk` 経由で `@openai/codex` を推移的に引くため `node_modules` にはバイナリが入るが、PATH に出るのは直接依存の bin だけなので公式インストーラ版と衝突しない
 - 1 が例外なのは、これらの言語自身がバージョン切り替え機構を持たないため。go は `GOTOOLCHAIN`、rust は `rustup` + `rust-toolchain.toml`、python は `uv` が `requires-python` を解決するので、Nix に置く
 - 2 の判定は `nix eval` で確認する
-- 3 は `home-manager switch` 時に `~/.npm-global` へ `npm ci` で展開され、`~/.npm-global/node_modules/.bin` が PATH に通る。単体 CLI も、textlint のようにプリセットと `node_modules` を共有する必要があるツールチェーンも、ここにまとめる
+- 3 は `home-manager switch` 時に `~/.npm-global` へ `npm ci` で展開される。単体 CLI も、textlint のようにプリセットと `node_modules` を共有する必要があるツールチェーンも、ここにまとめる
+  - PATH に通すのは `npm/link-bins.mjs` が張る `~/.npm-global/bin` で、`node_modules/.bin` ではない。後者には推移的依存の bin（`semver` / `yaml` / `parser` / `rc` など汎用名）も並び、PATH に出すと他の管理系のコマンドを shadow するため
+  - よって PATH に出したいコマンドは、推移的に入っていても `package.json` の直接依存として宣言する
 - `npm/package.json` を編集したら `npm install --package-lock-only --prefix npm` で `package-lock.json` を再生成して両方 commit する
 - バージョンはいずれの管理先でも固定する。npm パッケージは min release age 7 日を満たす版のみ採用する
 - 自前 derivation は持たない。nixpkgs に無いものは mise の backend で解決する
