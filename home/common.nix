@@ -110,6 +110,10 @@
     (
       export PATH="${pkgs.nodejs}/bin:$PATH"
       run ${pkgs.nodejs}/bin/npm ci --prefix "$HOME/.npm-global" --loglevel=error --no-fund --no-audit
+      # codex は公式インストーラ管理（CLAUDE.md「パッケージの管理先」#0）。takt の
+      # 推移的依存で入る .bin/codex が ~/.local/bin/codex を shadow しうるので外す。
+      # @openai/codex-sdk はパッケージを require.resolve で引くため、この bin は不要。
+      run rm -f "$HOME/.npm-global/node_modules/.bin/codex"
     )
   '';
 
