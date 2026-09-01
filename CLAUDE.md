@@ -54,13 +54,17 @@ home-manager switch --flake .#linux  --impure   # Linux
 
 追加するパッケージをどこで宣言するかは、上から順に機械的に判定する。裁量で判断しない。
 
-| # | 条件              | 管理先                                                 |
-| - | ----------------- | ------------------------------------------------------ |
-| 1 | node / bun / java | `config/mise/config.toml`                              |
-| 2 | nixpkgs にある    | `home/common.nix` の `home.packages`                   |
-| 3 | npm パッケージ    | `npm/package.json`                                     |
-| 4 | 上記以外          | `config/mise/config.toml`（`http` / `github` backend） |
+| # | 条件                         | 管理先                                                 |
+| - | ---------------------------- | ------------------------------------------------------ |
+| 0 | 自己更新するエージェント CLI | 管理対象外（公式インストーラで `~/.local/bin` へ）     |
+| 1 | node / bun / java            | `config/mise/config.toml`                              |
+| 2 | nixpkgs にある               | `home/common.nix` の `home.packages`                   |
+| 3 | npm パッケージ               | `npm/package.json`                                     |
+| 4 | 上記以外                     | `config/mise/config.toml`（`http` / `github` backend） |
 
+- 0 は Claude Code と codex。どちらも self-update 機構を自身に持ち、更新のたびに宣言と実体がずれるため、宣言的管理から外して各公式インストーラに任せる
+  - codex は `curl -fsSL https://chatgpt.com/codex/install.sh | sh` で入れる。`npm install -g` は使わない（npm の prefix が mise の node install ディレクトリを指すため、mise 管理下に紛れ込む）
+  - takt の推移的依存として `~/.npm-global/node_modules/.bin/codex` も入るが、PATH は `~/.local/bin` が先なので公式インストーラ版が優先される
 - 1 が例外なのは、これらの言語自身がバージョン切り替え機構を持たないため。go は `GOTOOLCHAIN`、rust は `rustup` + `rust-toolchain.toml`、python は `uv` が `requires-python` を解決するので、Nix に置く
 - 2 の判定は `nix eval` で確認する
 - 3 は `home-manager switch` 時に `~/.npm-global` へ `npm ci` で展開され、`~/.npm-global/node_modules/.bin` が PATH に通る。単体 CLI も、textlint のようにプリセットと `node_modules` を共有する必要があるツールチェーンも、ここにまとめる
