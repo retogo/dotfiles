@@ -1,6 +1,6 @@
 # 管理先の判定規則は CLAUDE.md「パッケージの管理先」を参照。
 # 更新時は mise ls-remote <tool> で候補を確認する。
 [tools]
-node = "24.18.1"
-bun = "1.4.0"
-java = "temurin-21.0.11+10.0.LTS"
+node = "24.20.0"
+bun = "1.4.2"
+java = "temurin-21.0.12+101.0.LTS"
