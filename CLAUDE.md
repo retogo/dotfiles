@@ -26,6 +26,9 @@ shell/
 npm/
   package.json         # npm パッケージの宣言。switch 時に ~/.npm-global へ npm ci で展開
   package-lock.json    # 上記の推移的依存の固定。npm install で再生成する
+desktop-skills/
+  build.sh             # skill ディレクトリを zip に固める
+  textlint-check/      # claude.ai / Claude Desktop 用の skill
 ```
 
 ## ビルド・適用
@@ -98,6 +101,30 @@ mise install
 | `~/.config/foo` | `xdg.configFile."foo".source` |
 
 実行ビットが要るものは `executable = true`、ディレクトリ単位で配るものは `recursive = true` を付ける。
+
+## Claude Desktop 用 skill
+
+`config/claude/skills/` は home-manager が `~/.claude/skills` へ配る Claude Code 用。
+claude.ai / Claude Desktop は zip をアップロードする方式で、skill は surface 間で同期しないため
+`desktop-skills/` に別実体を置く。
+
+```sh
+./desktop-skills/build.sh textlint-check   # → desktop-skills/dist/textlint-check.zip
+```
+
+生成した zip を claude.ai の Settings > Capabilities > Skills にアップロードする（個人単位。組織配布はできない）。
+
+- SKILL.md の frontmatter は `name` と `description` のみ。Claude Code 固有の `model:` は無効
+- `name` は小文字・数字・ハイフンのみ、64 文字以内。`claude` / `anthropic` は使えない
+- サンドボックスには textlint が無いので `scripts/setup.sh` が書き込み可能なディレクトリへ `npm ci` で展開する。node_modules は 126 MB あり同梱できないため、claude.ai 側でネットワークアクセスが有効になっている必要がある
+- `package-lock.json` は `npm/package-lock.json` から必要な部分を抜き出して作る。`npm/` の lockfile には safe-chain が `~/.npm/_cacache/tmp/` を指す相対パスのエントリを残すことがあり、これが混ざると `npm ci` がツリーを読めずに失敗する
+
+  ```sh
+  cd desktop-skills/textlint-check
+  cp ../../npm/package-lock.json .
+  node -e 'const fs=require("fs"),l=JSON.parse(fs.readFileSync("package-lock.json","utf8")),p=require("./package.json");l.name=p.name;l.packages[""]={name:p.name,version:p.version,dependencies:p.dependencies};for(const k of Object.keys(l.packages))if(k.includes(".."))delete l.packages[k];fs.writeFileSync("package-lock.json",JSON.stringify(l,null,2)+"\n")'
+  npm install --package-lock-only --prefer-offline
+  ```
 
 ## リポジトリ管理外の環境固有設定
 
