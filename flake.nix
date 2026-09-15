@@ -14,13 +14,7 @@
       darwinSystem = "aarch64-darwin";
       linuxSystem = "x86_64-linux";
 
-      mkPkgs = system: import nixpkgs {
-        inherit system;
-        config.allowUnfreePredicate = pkg:
-          builtins.elem (nixpkgs.lib.getName pkg) [
-            "terraform"
-          ];
-      };
+      mkPkgs = system: import nixpkgs { inherit system; };
 
       # ローカル環境変数からユーザー名と HOME を取得し、リポジトリに固定値を含めない。
       # 評価には --impure が必要（install.sh で渡している）。

@@ -31,10 +31,8 @@
     tmux
     zellij
     lazygit
-    terraform
     dotenvx
     devcontainer
-    opencode
     codegraph
     gnupg
     firebase-tools

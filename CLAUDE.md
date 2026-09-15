@@ -53,7 +53,7 @@ mise install
 - シェル設定は `programs.zsh` の各オプションで管理し、実際のシェルスクリプトは `shell/` ディレクトリに分離
 - 環境固有の設定は `home/{darwin,linux}.nix` + `shell/{darwin,darwin-profile}.sh` で分離
 - `initExtra` は非推奨。`initContent` を使うこと（`lib.mkBefore` / `lib.mkAfter` で順序制御）
-- unfree パッケージは `flake.nix` の `allowUnfreePredicate` で明示的に許可する
+- unfree パッケージを入れる場合は `flake.nix` に `allowUnfreePredicate` を足して明示的に許可する（現在は該当なし）
 - `home.username` / `home.homeDirectory` はリポジトリに固定値を含めず、`flake.nix` で `builtins.getEnv "USER"` / `"HOME"` から取得する。これにより `--impure` 評価が必須になる
 
 ## パッケージの管理先
@@ -69,6 +69,8 @@ mise install
 
 - 1 が例外なのは、これらの言語自身がバージョン切り替え機構を持たないため。go は `GOTOOLCHAIN`、rust は `rustup` + `rust-toolchain.toml`、python は `uv` が `requires-python` を解決するので、Nix に置く
 - 2 の判定は `nix search nixpkgs --json "^<pkg>$"` で確認する（ヒットすれば nixpkgs にある）
+- 2 でも binary cache に無いものは 4 に落とす。cache の有無は `nix build '.#homeConfigurations.darwin.activationPackage' --impure --dry-run` で確認し、`will be built` に出るものが該当する（unfree は Hydra がビルドしないため常に該当）
+- ソースビルドを避けるのは switch が遅くなるからだけではない。TLS を終端するプロキシ配下では go を使うパッケージのビルドが通らない。darwin の go は `SSL_CERT_FILE` を見ずキーチェーンを読むが、ビルドサンドボックスからは参照できないため、CA を足す方法では解決しない
 - 3 は `home-manager switch` 時に `~/.npm-global` へ `npm ci` で展開され、`~/.npm-global/node_modules/.bin` が PATH に通る。単体 CLI も、textlint のようにプリセットと `node_modules` を共有する必要があるツールチェーンも、ここにまとめる
 - `npm/package.json` を編集したら `npm install --package-lock-only --prefix npm` で `package-lock.json` を再生成して両方 commit する
 - バージョンはいずれの管理先でも固定する。npm パッケージは min release age 7 日を満たす版のみ採用する

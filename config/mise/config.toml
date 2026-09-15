@@ -4,3 +4,9 @@
 node = "24.20.0"
 bun = "1.4.2"
 java = "temurin-21.0.12+101.0.LTS"
+
+# 以下は nixpkgs にもあるが binary cache に無く、ソースビルドを避けるため mise で取る。
+# terraform は unfree のため cache に入らない。TLS を終端するプロキシ配下では
+# go のモジュール取得が検証に失敗し、ビルド自体が通らない。
+terraform = "1.16.2"
+opencode = "1.18.30"
