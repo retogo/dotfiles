@@ -98,3 +98,15 @@ mise install
 | `~/.config/foo` | `xdg.configFile."foo".source` |
 
 実行ビットが要るものは `executable = true`、ディレクトリ単位で配るものは `recursive = true` を付ける。
+
+## リポジトリ管理外の環境固有設定
+
+特定のネットワークや組織にしか当てはまらない設定はリポジトリに入れない。以下は手で用意する前提で、マシンを再構築したときはここから復元する。
+
+| パス                           | 役割                                                                                                                   |
+| ------------------------------ | ---------------------------------------------------------------------------------------------------------------------- |
+| `~/.config/certs/`             | TLS を終端するプロキシ配下で使う CA。組織の root CA と、nix のバンドルに結合した `ca-bundle.crt`、その再生成スクリプト |
+| `/etc/nix/nix.custom.conf`     | nix 自身の通信が使う CA を `ssl-cert-file` で指す。nix-installer が生成するため再インストールで戻る                    |
+| `~/.config/mise/conf.d/*.toml` | mise が読む環境固有の上書き（`NODE_OPTIONS` など）                                                                     |
+
+`~/.config/mise/config.toml` は store への symlink だが、`conf.d/` は mise が別に読むため環境固有の上書きを置ける。`ssl-cert-file` が効くのは nix 自身の通信までで、ビルダー内には渡らない（→「パッケージの管理先」）。
