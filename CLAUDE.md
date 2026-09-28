@@ -20,7 +20,7 @@ config/                # 配布する設定ファイルの実体
   claude/              # statusline と配布する skill
   nvim/ ghostty/ tmux/ zellij/ lazygit/ dprint/ markdownlint/ uv/ starship.toml
 shell/
-  common.sh            # 共通シェル関数（cdp, メモ関数群）
+  common.sh            # 共通シェル関数（cdp, cdw, メモ関数群）
   darwin.sh            # macOS 固有の initContent（Docker, uuidgen）
   darwin-profile.sh    # macOS 固有の profileExtra（Homebrew, Obsidian PATH）
 npm/

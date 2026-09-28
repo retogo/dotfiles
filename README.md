@@ -1,16 +1,8 @@
 # dotfiles
 
-Nix flake + home-manager による開発環境管理。
+Nix flake + home-manager による開発環境管理。言語ランタイムなど一部のツールは mise で管理する。
 
 ## セットアップ
-
-### 1. Nix のインストール
-
-```sh
-curl -sSfL https://artifacts.nixos.org/nix-installer | sh -s -- install
-```
-
-### 2. home-manager の適用
 
 ```sh
 git clone https://github.com/retogo/dotfiles.git
@@ -18,45 +10,47 @@ cd dotfiles
 ./install.sh
 ```
 
-`install.sh` は OS を判定して `darwin` / `linux` のいずれかの configuration を適用する。`home.username` と `home.homeDirectory` は flake 評価時に環境変数 `$USER` / `$HOME` から取得するため、`--impure` 付きで実行される（`install.sh` 内で指定済み）。
+`install.sh` は次の順に実行する。
+
+1. Nix が無ければインストールする
+2. OS を判定して `darwin` / `linux` のいずれかの configuration を home-manager で適用する
+3. `mise install` で mise 管理のツールを取得する
+
+`home.username` と `home.homeDirectory` は flake 評価時に環境変数 `$USER` / `$HOME` から取得するため、`--impure` 付きで実行される（`install.sh` 内で指定済み）。
 
 直接コマンドで実行する場合:
 
 ```sh
 home-manager switch --flake .#darwin --impure   # macOS
 home-manager switch --flake .#linux  --impure   # Linux
+mise install
 ```
 
 ## 設定の変更
 
-1. `home/` または `shell/` のファイルを編集
-2. 新規ファイルを追加した場合は `git add` する
-3. `./install.sh` で再適用
+1. `home/` / `shell/` / `config/` / `npm/` のファイルを編集
+2. `npm/package.json` を編集した場合は `npm install --package-lock-only --prefix npm` で `package-lock.json` を再生成する
+3. 新規ファイルを追加した場合は `git add` する（flake は未追跡ファイルを無視する）
+4. `./install.sh` で再適用
 
 ## 構成
 
-| パス                      | 内容                                        |
-| ------------------------- | ------------------------------------------- |
-| `flake.nix`               | エントリポイント。darwin / linux の出し分け |
-| `home/common.nix`         | 共通パッケージ・zsh 設定                    |
-| `home/darwin.nix`         | macOS 固有設定                              |
-| `home/linux.nix`          | Linux 固有設定                              |
-| `shell/common.sh`         | 共通シェル関数                              |
-| `shell/darwin.sh`         | macOS 固有のシェル設定                      |
-| `shell/darwin-profile.sh` | macOS のログイン時設定                      |
+| パス                      | 内容                                                 |
+| ------------------------- | ---------------------------------------------------- |
+| `flake.nix`               | エントリポイント。darwin / linux の出し分け          |
+| `home/common.nix`         | 共通パッケージ・zsh 設定・設定ファイルの配置         |
+| `home/darwin.nix`         | macOS 固有設定                                       |
+| `home/linux.nix`          | Linux 固有設定                                       |
+| `shell/common.sh`         | 共通シェル関数                                       |
+| `shell/darwin.sh`         | macOS 固有のシェル設定                               |
+| `shell/darwin-profile.sh` | macOS のログイン時設定                               |
+| `config/`                 | `~` / `~/.config` に配る設定ファイルの実体           |
+| `config/mise/config.toml` | mise で管理するツールの版                            |
+| `npm/`                    | `~/.npm-global` に展開する npm パッケージと lockfile |
 
 ## パッケージの追加
 
-`home/common.nix` の `home.packages` に追加する。macOS 固有なら `home/darwin.nix` に追加する。
-
-```nix
-home.packages = with pkgs; [
-  # 追加したいパッケージ
-  ripgrep
-];
-```
-
-unfree パッケージは `flake.nix` の `allowUnfreePredicate` への追加も必要。
+パッケージの種類によって宣言先が `config/mise/config.toml` / `home/common.nix` / `npm/package.json` に分かれる。判定規則は [CLAUDE.md](CLAUDE.md) の「パッケージの管理先」に従う。
 
 ## devcontainer
 
