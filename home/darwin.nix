@@ -1,6 +1,10 @@
-{ lib, ... }:
+{ pkgs, lib, ... }:
 
 {
+  home.packages = with pkgs; [
+    blender
+  ];
+
   programs.zsh.profileExtra = builtins.readFile ../shell/darwin-profile.sh;
   programs.zsh.initContent = lib.mkAfter (builtins.readFile ../shell/darwin.sh);
 
