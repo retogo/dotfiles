@@ -13,7 +13,7 @@ home/
   darwin.nix           # macOS 固有（profileExtra, initContent, ghostty）
   linux.nix            # Linux 固有（最小限、将来用）
 config/                # 配布する設定ファイルの実体
-  mise/config.toml     # mise が管理する言語ランタイムの版（node / bun / java）
+  mise/config.toml     # mise が管理するツールの版（node / bun / java と、binary cache に無いもの）
   .npmrc               # min-release-age=7 を強制する
   .textlintrc.json     # textlint のルールセット
   .gitconfig           # .gitignore_global と対
