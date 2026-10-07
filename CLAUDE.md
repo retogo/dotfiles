@@ -7,11 +7,12 @@ Nix flake + home-manager によるdotfiles管理。シェル設定・パッケ�
 ## 構成
 
 ```
-flake.nix              # エントリポイント。darwin/linux の homeConfigurations を定義
+flake.nix              # エントリポイント。darwin/linux/wsl2 の homeConfigurations を定義
 home/
   common.nix           # 共通パッケージ + zsh 設定（programs.zsh）
   darwin.nix           # macOS 固有（profileExtra, initContent, ghostty）
   linux.nix            # Linux 固有（最小限、将来用）
+  wsl2.nix             # WSL2 固有（linux.nix に重ねる。wsl-open, BROWSER）
 config/                # 配布する設定ファイルの実体
   mise/config.toml     # mise が管理するツールの版（node / bun / java と、binary cache に無いもの）
   .npmrc               # min-release-age=7 を強制する
@@ -30,7 +31,7 @@ npm/
 
 ## ビルド・適用
 
-`install.sh` 経由で実行する（OS 判定 + `--impure` を自動付与）:
+`install.sh` 経由で実行する（OS 判定 + `--impure` を自動付与）。Linux では `/proc/version` に `microsoft` があれば `wsl2`、なければ `linux` を選び、Nix の zsh をログインシェルに設定する:
 
 ```sh
 ./install.sh
@@ -41,6 +42,7 @@ npm/
 ```sh
 home-manager switch --flake .#darwin --impure   # macOS
 home-manager switch --flake .#linux  --impure   # Linux
+home-manager switch --flake .#wsl2   --impure   # WSL2
 mise install
 ```
 
@@ -51,7 +53,7 @@ mise install
 - シェルは zsh に統一（bash 設定は不要）
 - `.zshrc` / `.zshenv` / `.zprofile` は全て home-manager が Nix store への symlink として管理。手動 symlink は使わない
 - シェル設定は `programs.zsh` の各オプションで管理し、実際のシェルスクリプトは `shell/` ディレクトリに分離
-- 環境固有の設定は `home/{darwin,linux}.nix` + `shell/{darwin,darwin-profile}.sh` で分離
+- 環境固有の設定は `home/{darwin,linux,wsl2}.nix` + `shell/{darwin,darwin-profile}.sh` で分離
 - `initExtra` は非推奨。`initContent` を使うこと（`lib.mkBefore` / `lib.mkAfter` で順序制御）
 - unfree パッケージを入れる場合は `flake.nix` に `allowUnfreePredicate` を足して明示的に許可する（現在は該当なし）
 - `home.username` / `home.homeDirectory` はリポジトリに固定値を含めず、`flake.nix` で `builtins.getEnv "USER"` / `"HOME"` から取得する。これにより `--impure` 評価が必須になる
