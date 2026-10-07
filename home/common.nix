@@ -52,6 +52,7 @@
     yazi
     tree
     glow
+    jq
     yq
 
     # LLM Runtime

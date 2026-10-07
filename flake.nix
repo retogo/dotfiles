@@ -39,6 +39,12 @@
           ./home/common.nix
           ./home/linux.nix
         ];
+
+        "wsl2" = mkHome linuxSystem [
+          ./home/common.nix
+          ./home/linux.nix
+          ./home/wsl2.nix
+        ];
       };
     };
 }
