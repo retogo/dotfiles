@@ -71,7 +71,7 @@ mise install
 
 - 1 が例外なのは、これらの言語自身がバージョン切り替え機構を持たないため。go は `GOTOOLCHAIN`、rust は `rustup` + `rust-toolchain.toml`、python は `uv` が `requires-python` を解決するので、Nix に置く
 - 2 の判定は `nix search nixpkgs --json "^<pkg>$"` で確認する（ヒットすれば nixpkgs にある）
-- 2 でも binary cache に無いものは 4 に落とす。cache の有無は `nix build '.#homeConfigurations.darwin.activationPackage' --impure --dry-run` で確認し、`will be built` に出るものが該当する（unfree は Hydra がビルドしないため常に該当）
+- 2 でも binary cache に無いものは 4 に落とす。cache の有無は `nix build '.#homeConfigurations.<darwin|linux>.activationPackage' --impure --dry-run` で確認し、`will be built` に出るものが該当する（unfree は Hydra がビルドしないため常に該当）。cache は system ごとに別なので darwin と linux の両方を見る。darwin 上からでも linux の dry-run は評価できる
 - ソースビルドを避けるのは switch が遅くなるからだけではない。TLS を終端するプロキシ配下では go を使うパッケージのビルドが通らない。darwin の go は `SSL_CERT_FILE` を見ずキーチェーンを読むが、ビルドサンドボックスからは参照できないため、CA を足す方法では解決しない
 - 3 は `home-manager switch` 時に `~/.npm-global` へ `npm ci` で展開され、`~/.npm-global/node_modules/.bin` が PATH に通る。単体 CLI も、textlint のようにプリセットと `node_modules` を共有する必要があるツールチェーンも、ここにまとめる
 - `npm/package.json` を編集したら `npm install --package-lock-only --prefix npm` で `package-lock.json` を再生成して両方 commit する

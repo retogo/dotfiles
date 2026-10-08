@@ -10,3 +10,6 @@ java = "temurin-21.0.12+101.0.LTS"
 # go のモジュール取得が検証に失敗し、ビルド自体が通らない。
 terraform = "1.16.2"
 opencode = "1.18.30"
+# llama.cpp は x86_64-linux の cache に無い。バイナリは b<番号> の pre-release にしか
+# 付かず ls-remote には出ないため、gh release list -R ggml-org/llama.cpp で選ぶ。
+"llama.cpp" = "b11320"
