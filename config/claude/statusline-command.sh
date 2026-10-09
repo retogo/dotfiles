@@ -30,7 +30,8 @@ cache_is_stale() {
     fi
     local now file_age age
     now=$(date +%s)
-    file_age=$(stat -f %m "$CACHE_FILE" 2>/dev/null || stat -c %Y "$CACHE_FILE" 2>/dev/null)
+    # GNU stat は -f を「ファイルシステム情報」と解釈して成功してしまうため、GNU 形式を先に試す
+    file_age=$(stat -c %Y "$CACHE_FILE" 2>/dev/null || stat -f %m "$CACHE_FILE" 2>/dev/null)
     age=$(( now - file_age ))
     [ "$age" -ge "$CACHE_MAX_AGE" ]
 }
@@ -78,6 +79,13 @@ if [ -n "$cwd" ] && git -C "$cwd" rev-parse --git-dir > /dev/null 2>&1; then
     fi
 fi
 
+# 文字を n 回繰り返す。GNU tr はバイト単位で置換するため ▓ などのマルチバイト文字に使えない
+repeat_char() {
+    local i out=""
+    for (( i = 0; i < $2; i++ )); do out+="$1"; done
+    printf '%s' "$out"
+}
+
 # プログレスバーを構築（10文字、▓=使用済み、░=残り）
 build_progress_bar() {
     local pct=${1:-0}
@@ -100,9 +108,9 @@ build_progress_bar() {
     fi
 
     local bar="\033[${bar_color}m"
-    [ "$filled" -gt 0 ] && bar="${bar}$(printf "%${filled}s" | tr ' ' '▓')"
+    [ "$filled" -gt 0 ] && bar="${bar}$(repeat_char "▓" "$filled")"
 
-    [ "$empty" -gt 0 ] && bar="${bar}${reset}$(printf "%${empty}s" | tr ' ' '░')"
+    [ "$empty" -gt 0 ] && bar="${bar}${reset}$(repeat_char "░" "$empty")"
     bar="${bar}${reset}"
     printf "%b" "$bar"
 }
@@ -232,8 +240,8 @@ if [ -n "$rate_5h" ]; then
             [ "$filled" -gt "$BAR_WIDTH" ] && filled=$BAR_WIDTH
             empty=$(( BAR_WIDTH - filled ))
             rate_bar="\033[${bar_override_color}m"
-            [ "$filled" -gt 0 ] && rate_bar="${rate_bar}$(printf "%${filled}s" | tr ' ' '▓')"
-            [ "$empty" -gt 0 ] && rate_bar="${rate_bar}${reset}$(printf "%${empty}s" | tr ' ' '░')"
+            [ "$filled" -gt 0 ] && rate_bar="${rate_bar}$(repeat_char "▓" "$filled")"
+            [ "$empty" -gt 0 ] && rate_bar="${rate_bar}${reset}$(repeat_char "░" "$empty")"
             rate_bar="${rate_bar}${reset}"
         fi
     fi
