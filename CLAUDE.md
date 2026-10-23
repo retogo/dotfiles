@@ -14,7 +14,7 @@ home/
   linux.nix            # Linux 固有（最小限、将来用）
   wsl2.nix             # WSL2 固有（linux.nix に重ねる。wsl-open, BROWSER）
 config/                # 配布する設定ファイルの実体
-  mise/config.toml     # mise が管理するツールの版（node / bun / java と、binary cache に無いもの、CA バンドル）
+  mise/config.toml     # mise が管理するツールの版（node / bun / java と、binary cache に無いもの、CA バンドル、skill が呼ぶスクリプト）
   .npmrc               # min-release-age=7 を強制する
   .textlintrc.json     # textlint のルールセット
   .gitconfig           # .gitignore_global と対

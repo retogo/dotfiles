@@ -23,6 +23,9 @@ opencode = "1.18.30"
 # CA バンドルは nixpkgs の cacert にもあるが、Mozilla が CA を外してから
 # nixpkgs-unstable に届くまで遅れるため、curl.se の版を取る。
 "http:cacert" = { version = "{{vars.cacert}}", url = "https://curl.se/ca/cacert-{{version}}.pem", checksum = "sha256:796f1389bfea13c0ed78f663b765baaff54a508e5483786bd6ece73c5e3e3cbe" }
+# textlint-check skill が uv run で呼ぶ natural-japanese の lint.py。PATH に通すツールではなく、
+# tag の tarball を展開した skills/natural-japanese/scripts/ を mise where で引く。
+"http:natural-japanese" = { version = "1.6.0", url = "https://github.com/coji/natural-japanese/archive/refs/tags/v{{version}}.tar.gz", checksum = "sha256:4e1258f942e57fbe845fdc98f42227ecaf8f09ed033e17e0e9d22329a098c290" }
 
 [env]
 # OpenSSL で検証するツール（Python・uv、nix の curl / git など）の CA を上の版に揃える。

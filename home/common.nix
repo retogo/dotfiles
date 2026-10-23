@@ -117,6 +117,8 @@
   home.file.".claude/skills/diff-env/SKILL.md".source = ../config/claude/skills/diff-env/SKILL.md;
   home.file.".claude/skills/finishing-worktree/SKILL.md".source =
     ../config/claude/skills/finishing-worktree/SKILL.md;
+  home.file.".claude/skills/textlint-check/SKILL.md".source =
+    ../config/claude/skills/textlint-check/SKILL.md;
   home.file.".npmrc".source = ../config/.npmrc;
   home.file.".textlintrc.json".source = ../config/.textlintrc.json;
 
