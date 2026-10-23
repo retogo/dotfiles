@@ -14,7 +14,7 @@ home/
   linux.nix            # Linux 固有（最小限、将来用）
   wsl2.nix             # WSL2 固有（linux.nix に重ねる。wsl-open, BROWSER）
 config/                # 配布する設定ファイルの実体
-  mise/config.toml     # mise が管理するツールの版（node / bun / java と、binary cache に無いもの）
+  mise/config.toml     # mise が管理するツールの版（node / bun / java と、binary cache に無いもの、CA バンドル）
   .npmrc               # min-release-age=7 を強制する
   .textlintrc.json     # textlint のルールセット
   .gitconfig           # .gitignore_global と対
@@ -71,6 +71,7 @@ mise install
 
 - 1 が例外なのは、これらの言語自身がバージョン切り替え機構を持たないため。go は `GOTOOLCHAIN`、rust は `rustup` + `rust-toolchain.toml`、python は `uv` が `requires-python` を解決するので、Nix に置く
 - 2 の判定は `nix search nixpkgs --json "^<pkg>$"` で確認する（ヒットすれば nixpkgs にある）
+- 2 でも上流から nixpkgs への反映の遅れが問題になるもの（CA バンドル）は 4 に落とす。失効させた CA が手元に残る期間を、nixpkgs の更新待ちで延ばさないため
 - 2 でも binary cache に無いものは 4 に落とす。cache の有無は `nix build '.#homeConfigurations.<darwin|linux>.activationPackage' --impure --dry-run` で確認し、`will be built` に出るものが該当する（unfree は Hydra がビルドしないため常に該当）。cache は system ごとに別なので darwin と linux の両方を見る。darwin 上からでも linux の dry-run は評価できる
 - ソースビルドを避けるのは switch が遅くなるからだけではない。TLS を終端するプロキシ配下では go を使うパッケージのビルドが通らない。darwin の go は `SSL_CERT_FILE` を見ずキーチェーンを読むが、ビルドサンドボックスからは参照できないため、CA を足す方法では解決しない
 - 3 は `home-manager switch` 時に `~/.npm-global` へ `npm ci` で展開され、`~/.npm-global/node_modules/.bin` が PATH に通る。単体 CLI も、textlint のようにプリセットと `node_modules` を共有する必要があるツールチェーンも、ここにまとめる
@@ -105,10 +106,10 @@ mise install
 
 特定のネットワークや組織にしか当てはまらない設定はリポジトリに入れない。以下は手で用意する前提で、マシンを再構築したときはここから復元する。
 
-| パス                           | 役割                                                                                                                   |
-| ------------------------------ | ---------------------------------------------------------------------------------------------------------------------- |
-| `~/.config/certs/`             | TLS を終端するプロキシ配下で使う CA。組織の root CA と、nix のバンドルに結合した `ca-bundle.crt`、その再生成スクリプト |
-| `/etc/nix/nix.custom.conf`     | nix 自身の通信が使う CA を `ssl-cert-file` で指す。nix-installer が生成するため再インストールで戻る                    |
-| `~/.config/mise/conf.d/*.toml` | mise が読む環境固有の上書き（`NODE_OPTIONS` など）                                                                     |
+| パス                           | 役割                                                                                                                        |
+| ------------------------------ | --------------------------------------------------------------------------------------------------------------------------- |
+| `~/.config/certs/`             | TLS を終端するプロキシ配下で使う CA。組織の root CA と、mise の CA バンドルに結合した `ca-bundle.crt`、その再生成スクリプト |
+| `/etc/nix/nix.custom.conf`     | nix 自身の通信が使う CA を `ssl-cert-file` で指す。nix-installer が生成するため再インストールで戻る                         |
+| `~/.config/mise/conf.d/*.toml` | mise が読む環境固有の上書き（`NODE_OPTIONS` など）                                                                          |
 
 `~/.config/mise/config.toml` は store への symlink だが、`conf.d/` は mise が別に読むため環境固有の上書きを置ける。`ssl-cert-file` が効くのは nix 自身の通信までで、ビルダー内には渡らない（→「パッケージの管理先」）。

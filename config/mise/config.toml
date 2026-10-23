@@ -1,7 +1,12 @@
 # 管理先の判定規則は CLAUDE.md「パッケージの管理先」を参照。
 # 更新時は mise ls-remote <tool> で候補を確認する。
+[vars]
+# curl.se が配る Mozilla の CA バンドルの日付。https://curl.se/docs/caextract.html で選び、
+# checksum は https://curl.se/ca/cacert-<日付>.pem.sha256 の値に揃える。
+cacert = "2026-10-20"
+
 [tools]
-node = "24.20.0"
+node = "24.22.1"
 bun = "1.4.2"
 java = "temurin-21.0.12+101.0.LTS"
 
@@ -15,6 +20,16 @@ opencode = "1.18.30"
 "llama.cpp" = "b11320"
 # Track CLI（試験用）。npm パッケージだが mise の npm backend で入れる。
 "npm:track-cli" = "4.2.0"
+# CA バンドルは nixpkgs の cacert にもあるが、Mozilla が CA を外してから
+# nixpkgs-unstable に届くまで遅れるため、curl.se の版を取る。
+"http:cacert" = { version = "{{vars.cacert}}", url = "https://curl.se/ca/cacert-{{version}}.pem", checksum = "sha256:796f1389bfea13c0ed78f663b765baaff54a508e5483786bd6ece73c5e3e3cbe" }
+
+[env]
+# OpenSSL で検証するツール（Python・uv、nix の curl / git など）の CA を上の版に揃える。
+# nix の OpenSSL は SSL_CERT_FILE より NIX_SSL_CERT_FILE を優先するため両方を指す。
+# Node はどちらも読まず、本体に同梱した CA を使う。
+SSL_CERT_FILE = "{{env.HOME}}/.local/share/mise/installs/http-cacert/{{vars.cacert}}/cacert-{{vars.cacert}}.pem"
+NIX_SSL_CERT_FILE = "{{env.SSL_CERT_FILE}}"
 
 [settings]
 # 既定の auto だと npm backend が aube を使い、非対話の mise install が確認待ちで
