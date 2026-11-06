@@ -27,6 +27,8 @@
     git
     delta
     neovim
+    # render-markdown.nvim が latex2text で数式を Unicode に変換する
+    python3Packages.pylatexenc
     micro
     tmux
     zellij
