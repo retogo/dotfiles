@@ -20,6 +20,8 @@ opencode = "1.18.30"
 "llama.cpp" = "b11320"
 # Track CLI（試験用）。npm パッケージだが mise の npm backend で入れる。
 "npm:track-cli" = "4.2.0"
+# Google Colab のランタイムを操作する CLI（colab コマンド）。PyPI 配布で nixpkgs に無い。
+"pipx:google-colab-cli" = "0.7.5"
 # CA バンドルは nixpkgs の cacert にもあるが、Mozilla が CA を外してから
 # nixpkgs-unstable に届くまで遅れるため、curl.se の版を取る。
 "http:cacert" = { version = "{{vars.cacert}}", url = "https://curl.se/ca/cacert-{{version}}.pem", checksum = "sha256:796f1389bfea13c0ed78f663b765baaff54a508e5483786bd6ece73c5e3e3cbe" }
