@@ -54,6 +54,7 @@
     yazi
     tree
     glow
+    leaf-markdown-viewer
     jq
     yq
   ];
