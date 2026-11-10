@@ -1,0 +1,10 @@
+{
+  "name": "markdown-extras",
+  "version": "0.1.0",
+  "description": "Markdown tweaks: inline LaTeX math as Unicode in compose view, list text in the body color",
+  "type": "plugin",
+  "license": "MIT",
+  "fresh": {
+    "entry": "markdown-math.ts"
+  }
+}

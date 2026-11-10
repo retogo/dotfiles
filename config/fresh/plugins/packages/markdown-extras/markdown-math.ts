@@ -1,8 +1,9 @@
 // Markdown の整形表示（compose）で、インライン数式 `$...$` を Unicode の数式表記に
 // 置き換えて見せる。カーソルが同じ行にある間は元の TeX 記法を表示する。
 
-import { findMathSpans, utf8ByteLength } from "./lib/spans.ts";
+import { findMathSpans } from "./lib/spans.ts";
 import { texToUnicode } from "./lib/tex.ts";
+import { utf8ByteLength } from "./lib/utf8.ts";
 
 const editor = getEditor();
 

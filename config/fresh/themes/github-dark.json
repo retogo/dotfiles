@@ -149,7 +149,7 @@
     "variable": [201, 209, 217],
     "variable_builtin": [121, 192, 255],
     "constant": [121, 192, 255],
-    "operator": [201, 209, 217],
+    "operator": [255, 123, 114],
     "punctuation_bracket": [201, 209, 217],
     "punctuation_delimiter": [201, 209, 217]
   }

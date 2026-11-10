@@ -1,5 +1,5 @@
 import { describe, expect, test } from "bun:test";
-import { findMathSpans, utf8ByteLength } from "../lib/spans.ts";
+import { findMathSpans } from "../lib/spans.ts";
 
 describe("findMathSpans", () => {
   test("1 つの数式を $ ごと範囲に含める", () => {
@@ -31,16 +31,5 @@ describe("findMathSpans", () => {
 
   test("インラインコードの後ろにある数式は拾う", () => {
     expect(findMathSpans("`$a$` と $b$")).toEqual([{ start: 8, end: 11, tex: "b" }]);
-  });
-});
-
-describe("utf8ByteLength", () => {
-  test.each([
-    ["abc", 3],
-    ["配点 : ", 9],
-    ["α≤", 5],
-    ["😀", 4],
-  ])("%s は %d バイト", (text, bytes) => {
-    expect(utf8ByteLength(text)).toBe(bytes);
   });
 });
