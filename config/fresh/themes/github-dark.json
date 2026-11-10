@@ -115,7 +115,6 @@
     "tab_drop_zone_border": [88, 166, 255],
     "settings_selected_bg": [31, 111, 235],
     "settings_selected_fg": [255, 255, 255],
-    "file_explorer_directory_fg": [201, 209, 217],
     "file_status_added_fg": [63, 185, 80],
     "file_status_modified_fg": [210, 153, 34],
     "file_status_deleted_fg": [248, 81, 73],

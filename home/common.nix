@@ -136,6 +136,9 @@
     "zellij/config.kdl".source = ../config/zellij/config.kdl;
     "fresh/config.json".source = ../config/fresh/config.json;
     "fresh/themes/github-dark.json".source = ../config/fresh/themes/github-dark.json;
+    # Fresh は packages/ 直下のフォルダをプラグインとして読み込む。
+    # ファイル単位で配ると本体と lib/ が別々の store パスになり、相対 import が解決できない
+    "fresh/plugins/packages/markdown-math".source = ../config/fresh/plugins/packages/markdown-math;
     "tmux/tmux.conf".source = ../config/tmux/tmux.conf;
     "tmux/rainbow-border.sh" = {
       source = ../config/tmux/rainbow-border.sh;
