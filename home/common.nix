@@ -87,8 +87,8 @@
     };
 
     sessionVariables = {
-      EDITOR = "micro";
-      VISUAL = "micro";
+      EDITOR = "fresh";
+      VISUAL = "fresh";
       # Ghostty は Claude Code の OSC 8 ハイパーリンク自動検出に含まれないため強制有効化
       FORCE_HYPERLINK = "1";
     };
