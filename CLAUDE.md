@@ -19,7 +19,7 @@ config/                # 配布する設定ファイルの実体
   .textlintrc.json     # textlint のルールセット
   .gitconfig           # .gitignore_global と対
   claude/              # statusline と配布する skill
-  nvim/ ghostty/ tmux/ zellij/ lazygit/ dprint/ markdownlint/ uv/ starship.toml
+  nvim/ fresh/ ghostty/ tmux/ zellij/ lazygit/ dprint/ markdownlint/ uv/ starship.toml
 shell/
   common.sh            # 共通シェル関数（cdp, cdw, メモ関数群）
   darwin.sh            # macOS 固有の initContent（Docker, uuidgen）

@@ -30,6 +30,7 @@
     # render-markdown.nvim が latex2text で数式を Unicode に変換する
     python3Packages.pylatexenc
     micro
+    fresh-editor
     tmux
     zellij
     lazygit
@@ -133,6 +134,8 @@
     "dprint/dprint.jsonc".source = ../config/dprint/dprint.jsonc;
     "uv/uv.toml".source = ../config/uv/uv.toml;
     "zellij/config.kdl".source = ../config/zellij/config.kdl;
+    "fresh/config.json".source = ../config/fresh/config.json;
+    "fresh/themes/github-dark.json".source = ../config/fresh/themes/github-dark.json;
     "tmux/tmux.conf".source = ../config/tmux/tmux.conf;
     "tmux/rainbow-border.sh" = {
       source = ../config/tmux/rainbow-border.sh;
