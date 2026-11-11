@@ -26,9 +26,6 @@
     glab
     git
     delta
-    neovim
-    # render-markdown.nvim が latex2text で数式を Unicode に変換する
-    python3Packages.pylatexenc
     micro
     fresh-editor
     tmux
@@ -50,11 +47,8 @@
     dprint
 
     # CLI Utilities
-    fd
     fzf
-    yazi
     tree
-    glow
     leaf-markdown-viewer
     jq
     yq
@@ -74,8 +68,6 @@
 
     shellAliases = {
       lg = "lazygit";
-      vi = "nvim";
-      vim = "nvim";
 
       # Aikido Safe Chain: パッケージ取得時に悪性パッケージを検出するラッパー
       npm = "aikido-npm";
@@ -130,7 +122,6 @@
     "starship.toml".source = ../config/starship.toml;
     "mise/config.toml".source = ../config/mise/config.toml;
     "lazygit/config.yml".source = ../config/lazygit/config.yml;
-    "markdownlint/.markdownlint.json".source = ../config/markdownlint/.markdownlint.json;
     "dprint/dprint.jsonc".source = ../config/dprint/dprint.jsonc;
     "uv/uv.toml".source = ../config/uv/uv.toml;
     "zellij/config.kdl".source = ../config/zellij/config.kdl;
@@ -143,10 +134,6 @@
     "tmux/rainbow-border.sh" = {
       source = ../config/tmux/rainbow-border.sh;
       executable = true;
-    };
-    "nvim" = {
-      source = ../config/nvim;
-      recursive = true;
     };
   };
 }

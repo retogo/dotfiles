@@ -14,7 +14,6 @@ allowed-tools: Bash, Read, Glob, Grep
 2. **設定ファイルの内容差分**: 以下の各ファイルについて `diff` で比較する
    - `~/.zshrc` vs `.zshrc`
    - `~/.bashrc` vs `.bashrc`（Linuxの場合のみ）
-   - `~/.config/nvim/` vs `.config/nvim/`
    - `~/.config/zellij/` vs `.config/zellij/`
    - `~/.config/tmux/` vs `.config/tmux/`
    - `~/.config/starship.toml` vs `.config/starship.toml`
@@ -32,8 +31,7 @@ allowed-tools: Bash, Read, Glob, Grep
 
 以下は自動生成・ロックファイルのためdotfilesの管理対象外。差分として検出されても「同期不要」として扱う。
 
-- nvim: `lazy-lock.json`, `lazyvim.json`, `.neoconf.json`, `stylua.toml`, `LICENSE`, `README.md`, `lua/plugins/example.lua`
-- その他ツールが自動生成するロックファイル・キャッシュ全般
+- ツールが自動生成するロックファイル・キャッシュ全般
 
 ## 注意事項
 

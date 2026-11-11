@@ -19,7 +19,7 @@ config/                # 配布する設定ファイルの実体
   .textlintrc.json     # textlint のルールセット
   .gitconfig           # .gitignore_global と対
   claude/              # statusline と配布する skill
-  nvim/ ghostty/ tmux/ zellij/ lazygit/ dprint/ markdownlint/ uv/ starship.toml
+  ghostty/ tmux/ zellij/ lazygit/ dprint/ uv/ starship.toml
   fresh/               # Fresh の設定・テーマと自作プラグイン（plugins/packages/markdown-extras）
 shell/
   common.sh            # 共通シェル関数（cdp, cdw, メモ関数群）

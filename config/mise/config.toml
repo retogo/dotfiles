@@ -18,8 +18,6 @@ opencode = "1.18.30"
 # llama.cpp は x86_64-linux の cache に無い。バイナリは b<番号> の pre-release にしか
 # 付かず ls-remote には出ないため、gh release list -R ggml-org/llama.cpp で選ぶ。
 "llama.cpp" = "b11320"
-# Track CLI（試験用）。npm パッケージだが mise の npm backend で入れる。
-"npm:track-cli" = "4.2.0"
 # Google Colab のランタイムを操作する CLI（colab コマンド）。PyPI 配布で nixpkgs に無い。
 "pipx:google-colab-cli" = "0.7.5"
 # CA バンドルは nixpkgs の cacert にもあるが、Mozilla が CA を外してから
@@ -35,8 +33,3 @@ opencode = "1.18.30"
 # Node はどちらも読まず、本体に同梱した CA を使う。
 SSL_CERT_FILE = "{{env.HOME}}/.local/share/mise/installs/http-cacert/{{vars.cacert}}/cacert-{{vars.cacert}}.pem"
 NIX_SSL_CERT_FILE = "{{env.SSL_CERT_FILE}}"
-
-[settings]
-# 既定の auto だと npm backend が aube を使い、非対話の mise install が確認待ちで
-# 中断する（user aborted）。
-npm.package_manager = "npm"
