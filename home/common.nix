@@ -41,6 +41,7 @@
     ])
     kubectl
     kubernetes-helm
+    huggingface-cli
 
     # Linter / Formatter
     # textlint はプリセットと node_modules を共有する必要があるため npm/package.json 管理
