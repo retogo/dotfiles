@@ -41,6 +41,7 @@
     ])
     kubectl
     kubernetes-helm
+    huggingface-cli
 
     # Language Servers
     # typescript-language-server は tsserver を持つ typescript 5 系を同梱する（nixpkgs の typescript 7 は tsserver を持たない）
