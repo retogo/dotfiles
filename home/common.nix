@@ -42,6 +42,11 @@
     kubectl
     kubernetes-helm
 
+    # Language Servers
+    # typescript-language-server は tsserver を持つ typescript 5 系を同梱する（nixpkgs の typescript 7 は tsserver を持たない）
+    pyright
+    typescript-language-server
+
     # Linter / Formatter
     # textlint はプリセットと node_modules を共有する必要があるため npm/package.json 管理
     dprint
