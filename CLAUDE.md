@@ -38,12 +38,13 @@ npm/
 ./install.sh
 ```
 
-`install.sh` は switch に加えて `mise install` と、未インストールのコーディングエージェントのネイティブインストールまで実行する。直接実行する場合は switch だけなので、mise 管理のランタイムを実体化するには続けて `mise install` が要る。
+`install.sh` は switch に加えて `mise install` と、未インストールのコーディングエージェントのネイティブインストールまで実行する。直接実行する場合は switch だけなので、mise 管理のランタイムを実体化するには続けて `mise install` が要る。`[env]` の `SSL_CERT_FILE` は `http:cacert` のインストール先を指すため、初回は `mise install http:cacert` を先に実行する（未インストールのままだと uv などが TLS 検証に失敗する）。
 
 ```sh
 home-manager switch --flake .#darwin --impure   # macOS
 home-manager switch --flake .#linux  --impure   # Linux
 home-manager switch --flake .#wsl2   --impure   # WSL2
+mise install http:cacert   # SSL_CERT_FILE が指す CA バンドルを先に入れる
 mise install
 ```
 

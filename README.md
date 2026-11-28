@@ -14,7 +14,7 @@ cd dotfiles
 
 1. Nix が無ければインストールする
 2. OS を判定して `darwin` / `linux` のいずれかの configuration を home-manager で適用する
-3. `mise install` で mise 管理のツールを取得する
+3. `mise install` で mise 管理のツールを取得する（`SSL_CERT_FILE` が指す CA バンドルを先に入れる）
 4. コーディングエージェント（Claude Code / Codex / Antigravity CLI）が無ければ公式のネイティブインストーラーで `~/.local/bin` に入れる
 
 `home.username` と `home.homeDirectory` は flake 評価時に環境変数 `$USER` / `$HOME` から取得するため、`--impure` 付きで実行される（`install.sh` 内で指定済み）。
@@ -24,6 +24,7 @@ cd dotfiles
 ```sh
 home-manager switch --flake .#darwin --impure   # macOS
 home-manager switch --flake .#linux  --impure   # Linux
+mise install http:cacert   # SSL_CERT_FILE が指す CA バンドルを先に入れる
 mise install
 ```
 

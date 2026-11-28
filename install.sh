@@ -27,7 +27,10 @@ fi
 # flake.nix が $USER / $HOME を builtins.getEnv で参照するため --impure が必要
 nix run home-manager -- switch --flake "${DOTFILES_DIR}#${CONFIG}" -b backup --impure
 
-# mise 管理のランタイム（config/mise/config.toml）を実体化する
+# mise 管理のランタイム（config/mise/config.toml）を実体化する。
+# [env] の SSL_CERT_FILE は http:cacert のインストール先を指すため、未インストールのまま
+# 他のツールを入れると uv などが CA を読めず TLS 検証に失敗する。CA バンドルを先に入れる
+"$HOME/.nix-profile/bin/mise" install http:cacert
 "$HOME/.nix-profile/bin/mise" install
 
 # コーディングエージェントは更新が速く各自の auto update に任せるため、Nix / mise 管理外で
