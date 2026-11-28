@@ -38,7 +38,7 @@ npm/
 ./install.sh
 ```
 
-`install.sh` は switch に加えて `mise install` まで実行する。直接実行する場合は switch だけなので、mise 管理のランタイムを実体化するには続けて `mise install` が要る。
+`install.sh` は switch に加えて `mise install` と、未インストールのコーディングエージェントのネイティブインストールまで実行する。直接実行する場合は switch だけなので、mise 管理のランタイムを実体化するには続けて `mise install` が要る。
 
 ```sh
 home-manager switch --flake .#darwin --impure   # macOS
@@ -82,6 +82,7 @@ mise install
 - min release age は `config/.npmrc` の `min-release-age=7` が強制する。7 日未満の版を指定すると `npm install` が `ETARGET ... with a date before <7日前>` で失敗する。safe-chain の `--safe-chain-skip-minimum-package-age` では解除できず、ユーザーが例外を承認したときだけ `--min-release-age=0` を明示的に渡す
 - `npm ci` は resolution をせず lockfile 通りに展開するため min-release-age を見ない。lockfile さえ生成できれば switch の activation（`npm ci --prefix ~/.npm-global`）はこの制約に阻まれない
 - 自前 derivation は持たない。nixpkgs に無いものは mise の backend で解決する
+- コーディングエージェント (Claude Code / Codex / Antigravity CLI) は上の表の対象外。更新が速く各自の auto update に任せるため、`install.sh` が公式のネイティブインストーラーで `~/.local/bin` に入れる（未インストール時のみ）。`~/.local/bin` は `home.sessionPath` で PATH に通す
 
 ### mise
 

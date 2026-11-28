@@ -2,7 +2,8 @@
 
 {
   home.stateVersion = "24.11";
-  # Claude Code は auto update を利用するため Nix 管理外 (~/.local/bin)
+  # コーディングエージェント (Claude Code / Codex / Antigravity CLI) は auto update を利用するため
+  # Nix 管理外。install.sh がネイティブインストーラーで ~/.local/bin に入れる
   home.sessionPath = [
     "$HOME/.local/bin"
     "$HOME/.npm-global/node_modules/.bin"
